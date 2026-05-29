@@ -432,13 +432,23 @@ const App = {
     Auth.onAuthChange((event, session, profile) => {
       if (session && profile) {
         App.showApp(profile);
-      } else if (!session) {
+      } else {
+        // No session OR profile missing — always show login
         App.showLoginScreen();
       }
     });
     const { data: session } = await Auth.init();
     if (!session) {
       App.showLoginScreen();
+    } else {
+      // Session exists but onAuthChange may not fire — ensure something shows
+      setTimeout(() => {
+        const loginVisible = document.getElementById('loginScreen').style.display !== 'none';
+        const appVisible = document.getElementById('mainApp').style.display !== 'none';
+        if (!loginVisible && !appVisible) {
+          App.showLoginScreen();
+        }
+      }, 3000);
     }
   },
 

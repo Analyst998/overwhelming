@@ -65,7 +65,8 @@ const Auth = (() => {
   function isDesigner() { return _profile?.role === 'designer'; }
 
   // ==================== FETCH PROFILE ====================
-  // Fetches full profile row from the `profiles` table
+  // Fetches full profile row from the `profiles` table.
+  // If the row doesn't exist (user created before trigger), auto-creates it.
   async function fetchProfile(userId) {
     try {
       const { data, error } = await window.supabase
@@ -74,11 +75,27 @@ const Auth = (() => {
         .eq('id', userId)
         .single();
 
-      if (error) {
-        console.warn('[Auth] fetchProfile error:', error.message);
-        return null;
+      if (!error && data) return data;
+
+      // Profile missing — auto-create with defaults
+      const user = (await window.supabase.auth.getUser()).data?.user;
+      const name = user?.user_metadata?.name
+        || user?.email?.split('@')[0]
+        || 'Foydalanuvchi';
+      const role = user?.user_metadata?.role || 'designer';
+
+      const { data: created, error: createErr } = await window.supabase
+        .from('profiles')
+        .upsert({ id: userId, name, role }, { onConflict: 'id' })
+        .select()
+        .single();
+
+      if (createErr) {
+        console.warn('[Auth] fetchProfile auto-create error:', createErr.message);
+        // Return a minimal profile so the app doesn't hang on white screen
+        return { id: userId, name, role, division: null };
       }
-      return data;
+      return created;
     } catch (err) {
       console.warn('[Auth] fetchProfile exception:', err);
       return null;
