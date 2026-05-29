@@ -190,6 +190,7 @@
   }
   .role-badge.admin { background: rgba(255,255,255,0.95); color: var(--red); }
   .role-badge.manager { background: #FEF3C7; color: #92400E; }
+  .role-badge.kategoriya { background: #DBEAFE; color: #1E40AF; }
   .role-badge.designer { background: #D0EDE6; color: #1A6B52; }
   .logout-btn {
     background: rgba(255,255,255,0.15);
@@ -795,6 +796,51 @@
 
   canvas { max-height: 260px; }
 
+  /* DRAWER */
+  .drawer-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  }
+  .drawer-overlay.open { opacity: 1; pointer-events: all; }
+  .drawer {
+    position: fixed; right: -480px; top: 0; width: 480px; max-width: 95vw;
+    height: 100vh; background: white; z-index: 501;
+    box-shadow: -4px 0 32px rgba(0,0,0,0.15);
+    transition: right 0.3s cubic-bezier(0.4,0,0.2,1);
+    display: flex; flex-direction: column;
+  }
+  .drawer.open { right: 0; }
+  .drawer-head {
+    padding: 20px 24px; border-bottom: 1px solid var(--gray-200);
+    display: flex; align-items: flex-start; justify-content: space-between;
+    background: white; flex-shrink: 0;
+  }
+  .drawer-head-title { font-size: 16px; font-weight: 600; color: var(--gray-900); flex: 1; margin-right: 12px; }
+  .drawer-close {
+    width: 32px; height: 32px; border-radius: 8px; border: none;
+    background: var(--gray-100); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .drawer-close:hover { background: var(--gray-200); }
+  .drawer-body { padding: 24px; overflow-y: auto; flex: 1; }
+  .drawer-footer {
+    padding: 16px 24px; border-top: 1px solid var(--gray-200);
+    background: white; flex-shrink: 0; display: flex; gap: 10px; justify-content: flex-end;
+  }
+  .detail-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .detail-label { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+  .detail-value { font-size: 14px; color: var(--gray-900); }
+  .detail-half { flex: 1; }
+  .detail-desc-box { background: var(--gray-50); border-radius: var(--radius-sm); padding: 14px; font-size: 13px; color: var(--gray-700); line-height: 1.7; margin-bottom: 20px; border: 1px solid var(--gray-200); }
+  .comments-section { border-top: 1px solid var(--gray-200); padding-top: 20px; margin-top: 4px; }
+  .comment-item { display: flex; gap: 10px; margin-bottom: 14px; }
+  .comment-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--red-light); color: var(--red-dark); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .comment-bubble { background: var(--gray-50); border-radius: 0 10px 10px 10px; padding: 10px 12px; flex: 1; }
+  .comment-meta { font-size: 11px; color: var(--gray-500); margin-bottom: 4px; }
+  .comment-text { font-size: 13px; color: var(--gray-900); }
+  .comment-input-row { display: flex; gap: 8px; margin-top: 12px; }
+  .comment-input-row input { flex: 1; }
+
   @media (max-width: 900px) {
     .filter-bar { grid-template-columns: 1fr 1fr; }
   }
@@ -1026,6 +1072,12 @@
           <input type="text" id="taskNote" placeholder="Qo'shimcha ma'lumot">
         </div>
       </div>
+      <div class="form-grid" style="margin-bottom:16px">
+        <div class="form-group full">
+          <label>Tavsif (vazifa bayoni)</label>
+          <textarea id="taskDesc" rows="3" placeholder="Topshiriq haqida batafsil ma'lumot, texnik talablar..."></textarea>
+        </div>
+      </div>
       <div class="flex-end">
         <button class="btn btn-outline" onclick="resetForm()">Tozalash</button>
         <button class="btn btn-primary" onclick="addTask()">✓ Saqlash</button>
@@ -1091,6 +1143,16 @@
 
 <div class="notif" id="notif"></div>
 
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="taskDrawer">
+  <div class="drawer-head">
+    <div class="drawer-head-title" id="drawerTitle">—</div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-footer" id="drawerFooter"></div>
+</div>
+
 <script>
 // ==================== CONSTANTS ====================
 const DEFAULT_SLA_FORMATS = [
@@ -1112,9 +1174,10 @@ const ONTIME_WEIGHT = 0.90;
 const REVISION_WEIGHT = 0.10;
 
 const DEFAULT_USERS = [
-  { id: 'u1', username: 'admin',     password: 'admin123',  role: 'admin',    name: 'Administrator' },
-  { id: 'u2', username: 'rahbar',    password: 'rahbar123', role: 'manager',  name: 'Fazliddin (CMO)' },
-  { id: 'u3', username: 'dizayner',  password: 'dizayn123', role: 'designer', name: 'Dizayner' },
+  { id: 'u1', username: 'admin',     password: 'admin123',  role: 'admin',     name: 'Administrator' },
+  { id: 'u2', username: 'rahbar',    password: 'rahbar123', role: 'manager',   name: 'Fazliddin (CMO)' },
+  { id: 'u3', username: 'dizayner',  password: 'dizayn123', role: 'designer',  name: 'Dizayner' },
+  { id: 'u4', username: 'kategoriya', password: 'kat123',   role: 'kategoriya', name: 'Kategoriy menejeri' },
 ];
 
 // ==================== STORAGE KEYS ====================
@@ -1184,7 +1247,7 @@ function showMainApp() {
   // Header user info
   document.getElementById('headerUserName').textContent = currentUser.name;
   const rb = document.getElementById('headerRoleBadge');
-  const roleLabels = { admin: 'Egasi', manager: 'Rahbar', designer: 'Dizayner' };
+  const roleLabels = { admin: 'Egasi', manager: 'Rahbar', designer: 'Dizayner', kategoriya: 'Kategoriy menejeri' };
   rb.textContent = roleLabels[currentUser.role] || currentUser.role;
   rb.className = 'role-badge ' + currentUser.role;
   init();
@@ -1221,10 +1284,18 @@ function getAvailableTabs() {
       { label: '📄 Oylik hisobot',   page: 'report' },
       { label: '📐 SLA Qoidalar',    page: 'rules' },
     ];
+  } else if (role === 'kategoriya') {
+    return [
+      { label: '📊 Dashboard',       page: 'dashboard' },
+      { label: '📋 Topshiriqlar',    page: 'tasks' },
+      { label: '➕ Yangi topshiriq', page: 'add' },
+      { label: '📐 SLA Qoidalar',    page: 'rules' },
+    ];
   } else { // designer
     return [
       { label: '📊 Dashboard',              page: 'dashboard' },
       { label: '📋 Mening topshiriqlarim',  page: 'mytasks' },
+      { label: '📐 SLA Qoidalar',           page: 'rules' },
     ];
   }
 }
@@ -1260,10 +1331,10 @@ function populateFormDropdowns() {
     fd.innerHTML = '<option value="">Barchasi</option>' +
       DIVISIONS.map(d => `<option value="${d}">${d}</option>`).join('');
   }
-  // Show/hide tasks "add" button for manager
+  // Show/hide tasks "add" button — hidden only for designer
   const addBtn = document.getElementById('tasksAddBtn');
   if (addBtn) addBtn.style.display = currentUser.role === 'designer' ? 'none' : '';
-  // Rules admin bar
+  // Rules admin bar — only admin can edit rules
   const rulesBar = document.getElementById('rulesAdminBar');
   if (rulesBar) rulesBar.style.display = currentUser.role === 'admin' ? 'block' : 'none';
 }
@@ -1405,7 +1476,8 @@ function applyFilters() {
 
   document.getElementById('tasksCount').textContent = `${list.length} ta topshiriq`;
   const canDelete = currentUser.role === 'admin';
-  renderTaskTable('allTasksTable', list, true, canDelete);
+  const showActions = currentUser.role !== 'designer';
+  renderTaskTable('allTasksTable', list, showActions, canDelete);
 }
 
 function clearFilters() {
@@ -1443,32 +1515,27 @@ function renderTaskTable(containerId, list, showActions, canDelete, isDesigner) 
       </thead>
       <tbody>
         ${list.map(t => {
-          const comments = (t.comments||[]).map(c => `
-            <div class="comment-item">
-              <div class="comment-meta">${escHtml(c.user)} · ${c.time}</div>
-              ${escHtml(c.text)}
-            </div>`).join('');
           let actionBtns = '';
           if (isDesigner) {
             actionBtns = `<td>
-              <button class="btn-blue-sm" onclick="openStatusModal('${t.id}')">Holat o'zgartirish</button>
+              <button class="btn-blue-sm" onclick="event.stopPropagation();openStatusModal('${t.id}')">Holat o'zgartirish</button>
             </td>`;
           } else if (showActions) {
             actionBtns = `<td style="white-space:nowrap">
-              ${canDelete ? `<button class="btn-danger-sm" onclick="deleteTask('${t.id}')">O'chirish</button>` : ''}
+              ${canDelete ? `<button class="btn-danger-sm" onclick="event.stopPropagation();deleteTask('${t.id}')">O'chirish</button>` : ''}
             </td>`;
           }
+          const overdueStyle = isTaskOverdue(t) ? 'color:var(--red);font-weight:600' : 'font-size:12px';
           return `
-            <tr>
+            <tr style="cursor:pointer" onclick="openTaskDrawer('${t.id}')">
               <td>
                 ${escHtml(t.name)}
                 ${t.note ? `<div style="font-size:11px;color:var(--gray-500);margin-top:2px">${escHtml(t.note)}</div>` : ''}
-                ${comments}
               </td>
               <td><span class="badge-format">${escHtml(t.format)}</span></td>
               <td style="font-size:12px;color:var(--gray-500)">${escHtml(t.division)}</td>
               <td style="font-size:12px">${formatDate(t.givenDate)}</td>
-              <td style="font-size:12px">${formatDate(t.deadline)}</td>
+              <td style="${overdueStyle}">${formatDate(t.deadline)}</td>
               <td style="font-size:12px">${t.doneDate ? formatDate(t.doneDate) : '<span style="color:var(--gray-300)">—</span>'}</td>
               <td>${statusBadge(t.status)}${t.reason ? `<div style="font-size:10px;color:var(--gray-500);margin-top:2px">${escHtml(t.reason)}</div>` : ''}</td>
               ${showActions||isDesigner ? actionBtns : ''}
@@ -1504,18 +1571,21 @@ function addTask() {
   if (!name || !format || !given || !deadline) { showNotif('⚠️ Majburiy maydonlarni to\'ldiring'); return; }
 
   const task = {
-    id:        Date.now().toString(),
+    id:            Date.now().toString(),
     name,
     format,
-    division:  document.getElementById('taskDivision').value,
-    givenDate: given,
+    division:      document.getElementById('taskDivision').value,
+    givenDate:     given,
     deadline,
-    doneDate:  document.getElementById('taskDone').value || null,
-    status:    document.getElementById('taskStatus').value,
-    reason:    document.getElementById('taskReason').value.trim(),
-    note:      document.getElementById('taskNote').value.trim(),
-    createdAt: new Date().toISOString(),
-    comments:  [],
+    doneDate:      document.getElementById('taskDone').value || null,
+    status:        document.getElementById('taskStatus').value,
+    reason:        document.getElementById('taskReason').value.trim(),
+    note:          document.getElementById('taskNote').value.trim(),
+    desc:          document.getElementById('taskDesc')?.value.trim() || '',
+    createdAt:     new Date().toISOString(),
+    createdBy:     currentUser.name,
+    createdByRole: currentUser.role,
+    comments:      [],
   };
   tasks.push(task);
   saveTasks();
@@ -1525,7 +1595,7 @@ function addTask() {
 }
 
 function resetForm() {
-  ['taskName','taskGiven','taskDeadline','taskDone','taskReason','taskNote'].forEach(id => {
+  ['taskName','taskGiven','taskDeadline','taskDone','taskReason','taskNote','taskDesc'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1536,6 +1606,9 @@ function resetForm() {
   const ts = document.getElementById('taskStatus');
   if (ts) ts.value = 'pending';
   document.getElementById('taskGiven').value = new Date().toISOString().split('T')[0];
+  // Reset save button back to default
+  const saveBtn = document.querySelector('#page-add .btn-primary');
+  if (saveBtn) { saveBtn.textContent = '✓ Saqlash'; saveBtn.onclick = addTask; }
 }
 
 function deleteTask(id) {
@@ -1822,7 +1895,7 @@ function renderAdminPanel() {
       </thead>
       <tbody>
         ${users.map(u => {
-          const roleLabel = { admin:'Egasi', manager:'Rahbar', designer:'Dizayner' }[u.role] || u.role;
+          const roleLabel = { admin:'Egasi', manager:'Rahbar', designer:'Dizayner', kategoriya:'Kategoriy menejeri' }[u.role] || u.role;
           const isSelf = u.id === currentUser.id;
           return `
             <tr>
@@ -1860,6 +1933,7 @@ function openAddUserModal() {
       <select id="uRole">
         <option value="admin">Egasi (Admin)</option>
         <option value="manager">Rahbar (Manager)</option>
+        <option value="kategoriya">Kategoriy menejeri</option>
         <option value="designer" selected>Dizayner</option>
       </select>
     </div>
@@ -1905,6 +1979,7 @@ function openEditUserModal(uid) {
       <select id="uRole">
         <option value="admin" ${user.role==='admin'?'selected':''}>Egasi (Admin)</option>
         <option value="manager" ${user.role==='manager'?'selected':''}>Rahbar (Manager)</option>
+        <option value="kategoriya" ${user.role==='kategoriya'?'selected':''}>Kategoriy menejeri</option>
         <option value="designer" ${user.role==='designer'?'selected':''}>Dizayner</option>
       </select>
     </div>` : `<p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">O'z rolini o'zgartirish mumkin emas.</p>`}
@@ -2070,6 +2145,199 @@ function escHtml(str) {
     .replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;')
     .replace(/'/g,'&#39;');
+}
+
+// ==================== DRAWER ====================
+function openTaskDrawer(taskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  document.getElementById('drawerTitle').textContent = task.name;
+
+  const canChangeStatus = currentUser.role === 'designer';
+  const canEdit = ['admin','manager','kategoriya'].includes(currentUser.role);
+  const canDelete = currentUser.role === 'admin';
+
+  const comments = task.comments || [];
+
+  document.getElementById('drawerBody').innerHTML = `
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+      ${statusBadge(task.status)}
+      <span class="badge-format">${escHtml(task.format)}</span>
+      ${task.division ? `<span style="font-size:12px;color:var(--gray-500)">${escHtml(task.division)}</span>` : ''}
+    </div>
+
+    ${task.desc ? `<div class="detail-label">Tavsif</div><div class="detail-desc-box">${escHtml(task.desc).replace(/\n/g,'<br>')}</div>` : ''}
+
+    <div class="detail-row">
+      <div class="detail-half">
+        <div class="detail-label">Berilgan sana</div>
+        <div class="detail-value">${formatDate(task.givenDate)}</div>
+      </div>
+      <div class="detail-half">
+        <div class="detail-label">Deadline</div>
+        <div class="detail-value" style="${isTaskOverdue(task) ? 'color:var(--red);font-weight:600' : ''}">${formatDate(task.deadline)}</div>
+      </div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-half">
+        <div class="detail-label">Bajarilgan sana</div>
+        <div class="detail-value">${task.doneDate ? formatDate(task.doneDate) : '—'}</div>
+      </div>
+      <div class="detail-half">
+        <div class="detail-label">Yaratdi</div>
+        <div class="detail-value" style="font-size:12px">${task.createdBy ? escHtml(task.createdBy) : '—'}</div>
+      </div>
+    </div>
+
+    ${task.reason ? `<div style="background:var(--amber-light);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;margin-bottom:16px;border-left:3px solid #D97706">⚠️ ${escHtml(task.reason)}</div>` : ''}
+    ${task.note ? `<div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;margin-bottom:16px;color:var(--gray-700)">${escHtml(task.note)}</div>` : ''}
+
+    <div class="comments-section">
+      <div class="section-title" style="margin-bottom:14px">💬 Izohlar (${comments.length})</div>
+      <div id="commentsList">
+        ${comments.length ? comments.map(c => `
+          <div class="comment-item">
+            <div class="comment-avatar">${escHtml(c.user.charAt(0).toUpperCase())}</div>
+            <div class="comment-bubble">
+              <div class="comment-meta">${escHtml(c.user)} · ${escHtml(c.date || c.time || '')}</div>
+              <div class="comment-text">${escHtml(c.text)}</div>
+            </div>
+          </div>
+        `).join('') : '<p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Hali izoh yo\'q</p>'}
+      </div>
+      <div class="comment-input-row">
+        <input type="text" id="newCommentInput" placeholder="Izoh yozing..." onkeydown="if(event.key==='Enter')submitComment('${task.id}')">
+        <button class="btn btn-primary btn-sm" onclick="submitComment('${task.id}')">Yuborish</button>
+      </div>
+    </div>
+  `;
+
+  const footerBtns = [];
+  if (canChangeStatus) {
+    footerBtns.push(`<button class="btn btn-primary" onclick="showStatusChangeInDrawer('${task.id}')">Holat o'zgartirish</button>`);
+  }
+  if (canEdit) {
+    footerBtns.push(`<button class="btn btn-outline btn-sm" onclick="closeDrawer();showPage('add');prefillEditTask('${task.id}')">✏ Tahrirlash</button>`);
+  }
+  if (canDelete) {
+    footerBtns.push(`<button class="btn-danger-sm" onclick="deleteTask('${task.id}');closeDrawer()">O'chirish</button>`);
+  }
+  document.getElementById('drawerFooter').innerHTML = footerBtns.join('');
+  document.getElementById('drawerFooter').style.flexWrap = '';
+
+  document.getElementById('taskDrawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('taskDrawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+
+function submitComment(taskId) {
+  const input = document.getElementById('newCommentInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  if (!task.comments) task.comments = [];
+  task.comments.push({
+    user: currentUser.name,
+    role: currentUser.role,
+    text,
+    date: new Date().toLocaleDateString('uz-UZ'),
+  });
+  saveTasks();
+  input.value = '';
+  openTaskDrawer(taskId);
+}
+
+function showStatusChangeInDrawer(taskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  document.getElementById('drawerFooter').innerHTML = `
+    <select id="statusSelectInDrawer" style="flex:1;font-family:'Rubik',sans-serif;font-size:13px;padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm)">
+      <option value="pending" ${task.status==='pending'?'selected':''}>Jarayonda</option>
+      <option value="done_ontime" ${task.status==='done_ontime'?'selected':''}>✓ O'z vaqtida bajarildi</option>
+      <option value="done_late" ${task.status==='done_late'?'selected':''}>⚠ Kech bajarildi</option>
+      <option value="revision" ${task.status==='revision'?'selected':''}>↩ Qayta ishlash</option>
+    </select>
+    <button class="btn btn-primary" onclick="saveStatusFromDrawer('${taskId}')">Saqlash</button>
+    <button class="btn btn-outline" onclick="openTaskDrawer('${taskId}')">Bekor qilish</button>
+  `;
+  document.getElementById('drawerFooter').style.flexWrap = 'wrap';
+}
+
+function saveStatusFromDrawer(taskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  const newStatus = document.getElementById('statusSelectInDrawer').value;
+  task.status = newStatus;
+  if (newStatus === 'done_ontime' || newStatus === 'done_late') {
+    task.doneDate = new Date().toISOString().split('T')[0];
+  }
+  saveTasks();
+  showNotif('Holat yangilandi!');
+  openTaskDrawer(taskId);
+  const activePage = document.querySelector('.page.active')?.id?.replace('page-','');
+  if (activePage === 'tasks') renderTasks();
+  if (activePage === 'dashboard') renderDashboard();
+  if (activePage === 'mytasks') renderMyTasks();
+}
+
+function isTaskOverdue(task) {
+  if (!task.deadline) return false;
+  if (task.status === 'done_ontime' || task.status === 'done_late') return false;
+  return new Date(task.deadline) < new Date();
+}
+
+function prefillEditTask(taskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  setTimeout(() => {
+    document.getElementById('taskName').value = task.name || '';
+    document.getElementById('taskFormat').value = task.format || '';
+    document.getElementById('taskDivision').value = task.division || 'Umumiy';
+    document.getElementById('taskGiven').value = task.givenDate || '';
+    document.getElementById('taskDeadline').value = task.deadline || '';
+    document.getElementById('taskDone').value = task.doneDate || '';
+    document.getElementById('taskStatus').value = task.status || 'pending';
+    document.getElementById('taskReason').value = task.reason || '';
+    document.getElementById('taskNote').value = task.note || '';
+    if (document.getElementById('taskDesc')) document.getElementById('taskDesc').value = task.desc || '';
+    const saveBtn = document.querySelector('#page-add .btn-primary');
+    if (saveBtn) {
+      saveBtn.textContent = '✓ Yangilash';
+      saveBtn.onclick = () => updateTask(taskId);
+    }
+  }, 50);
+}
+
+function updateTask(taskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  const name = document.getElementById('taskName').value.trim();
+  const format = document.getElementById('taskFormat').value;
+  const given = document.getElementById('taskGiven').value;
+  const deadline = document.getElementById('taskDeadline').value;
+  if (!name || !format || !given || !deadline) { showNotif("⚠️ Majburiy maydonlarni to'ldiring"); return; }
+  task.name = name;
+  task.format = format;
+  task.division = document.getElementById('taskDivision').value;
+  task.givenDate = given;
+  task.deadline = deadline;
+  task.doneDate = document.getElementById('taskDone').value || null;
+  task.status = document.getElementById('taskStatus').value;
+  task.reason = document.getElementById('taskReason').value.trim();
+  task.note = document.getElementById('taskNote').value.trim();
+  task.desc = document.getElementById('taskDesc')?.value.trim() || '';
+  saveTasks();
+  resetForm();
+  showNotif('✓ Topshiriq yangilandi!');
+  showPage('tasks');
+  renderTasks();
 }
 
 // ==================== BOOTSTRAP ====================
