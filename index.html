@@ -530,11 +530,24 @@ const App = {
     const btn = document.querySelector('#loginScreen .btn-primary');
     btn.textContent = 'Kirish...';
     btn.disabled = true;
-    const { error } = await Auth.login(email, password);
-    btn.textContent = 'Kirish';
-    btn.disabled = false;
-    if (error) {
-      errEl.textContent = error.message || 'Xatolik yuz berdi';
+    try {
+      // Check supabase is ready
+      if (!window.supabase) throw new Error('Supabase yuklanmadi. Sahifani yangilang (F5).');
+      const { data, error } = await Auth.login(email, password);
+      btn.textContent = 'Kirish';
+      btn.disabled = false;
+      if (error) {
+        errEl.textContent = error.message || 'Xatolik yuz berdi';
+        errEl.style.display = 'block';
+      } else if (!data) {
+        errEl.textContent = 'Noma\'lum xatolik. Sahifani yangilang.';
+        errEl.style.display = 'block';
+      }
+      // Success: onAuthChange handles showApp()
+    } catch (e) {
+      btn.textContent = 'Kirish';
+      btn.disabled = false;
+      errEl.textContent = 'Xatolik: ' + (e.message || String(e));
       errEl.style.display = 'block';
     }
   },
@@ -1588,9 +1601,25 @@ function showConfigError() {
 // ================================================================
 //  BOOTSTRAP
 // ================================================================
+// Global error catcher — shows error on login screen
+window.addEventListener('error', function(e) {
+  var errEl = document.getElementById('loginError');
+  if (errEl) { errEl.textContent = 'JS xatolik: ' + e.message + ' (' + e.filename?.split('/').pop() + ':' + e.lineno + ')'; errEl.style.display = 'block'; }
+});
+window.addEventListener('unhandledrejection', function(e) {
+  var errEl = document.getElementById('loginError');
+  if (errEl) { errEl.textContent = 'Xatolik: ' + (e.reason?.message || String(e.reason)); errEl.style.display = 'block'; }
+});
+
 document.addEventListener('DOMContentLoaded', async function() {
   if (typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_ANON_KEY !== 'undefined') {
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    try {
+      window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch(e) {
+      document.getElementById('loginError').textContent = 'Supabase init xatolik: ' + e.message;
+      document.getElementById('loginError').style.display = 'block';
+      return;
+    }
   } else {
     showConfigError();
     return;
