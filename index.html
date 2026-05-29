@@ -1,2093 +1,1592 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Al-Sahiy — Dizayner SLA Tizimi</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
-
-  :root {
-    --red: #C92C35;
-    --red-dark: #A02028;
-    --red-light: #F5D5D7;
-    --red-mid: #E8A0A4;
-    --white: #FFFFFF;
-    --gray-50: #F9F9F9;
-    --gray-100: #F2F2F2;
-    --gray-200: #E5E5E5;
-    --gray-300: #CCCCCC;
-    --gray-500: #888888;
-    --gray-700: #444444;
-    --gray-900: #1A1A1A;
-    --green: #218F6D;
-    --green-light: #D0EDE6;
-    --amber: #B8860B;
-    --amber-light: #FEF3C7;
-    --danger-light: #FDE8E9;
-    --radius: 12px;
-    --radius-sm: 8px;
-    --shadow: 0 2px 12px rgba(201,44,53,0.08);
-    --shadow-card: 0 4px 24px rgba(0,0,0,0.07);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Rubik', sans-serif;
-    background: var(--gray-100);
-    color: var(--gray-900);
-    min-height: 100vh;
-  }
-
-  /* LOGIN */
-  .login-overlay {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(135deg, #A02028 0%, #C92C35 60%, #8B1A20 100%);
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .login-card {
-    background: white;
-    border-radius: 16px;
-    padding: 40px 36px;
-    width: 380px;
-    max-width: 94vw;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.3);
-  }
-  .login-logo {
-    text-align: center;
-    margin-bottom: 28px;
-  }
-  .login-logo-text {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--red);
-    letter-spacing: -0.5px;
-  }
-  .login-logo-sub {
-    font-size: 13px;
-    color: var(--gray-500);
-    margin-top: 4px;
-    font-weight: 400;
-  }
-  .login-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--gray-900);
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  .login-field { margin-bottom: 14px; }
-  .login-field label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--gray-700);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    margin-bottom: 6px;
-  }
-  .login-field input {
-    width: 100%;
-    font-family: 'Rubik', sans-serif;
-    font-size: 14px;
-    padding: 10px 14px;
-    border: 1.5px solid var(--gray-200);
-    border-radius: var(--radius-sm);
-    color: var(--gray-900);
-    background: white;
-    transition: border-color 0.2s;
-    outline: none;
-  }
-  .login-field input:focus { border-color: var(--red); }
-  .login-btn {
-    width: 100%;
-    background: var(--red);
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: var(--radius-sm);
-    font-family: 'Rubik', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: background 0.2s;
-  }
-  .login-btn:hover { background: var(--red-dark); }
-  .login-error {
-    background: var(--danger-light);
-    color: var(--red-dark);
-    font-size: 13px;
-    padding: 10px 14px;
-    border-radius: var(--radius-sm);
-    margin-bottom: 14px;
-    display: none;
-    font-weight: 500;
-  }
-
-  /* HEADER */
-  .header {
-    background: var(--red);
-    padding: 0 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 16px rgba(201,44,53,0.3);
-  }
-  .header-logo {
-    font-size: 22px;
-    font-weight: 700;
-    color: white;
-    letter-spacing: -0.5px;
-  }
-  .header-logo span { font-weight: 300; opacity: 0.85; }
-  .header-sub {
-    font-size: 13px;
-    color: rgba(255,255,255,0.75);
-    font-weight: 400;
-  }
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .month-badge {
-    background: rgba(255,255,255,0.18);
-    color: white;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-    border: 1px solid rgba(255,255,255,0.25);
-  }
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .user-name {
-    color: white;
-    font-size: 13px;
-    font-weight: 500;
-  }
-  .role-badge {
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-  .role-badge.admin { background: rgba(255,255,255,0.95); color: var(--red); }
-  .role-badge.manager { background: #FEF3C7; color: #92400E; }
-  .role-badge.designer { background: #D0EDE6; color: #1A6B52; }
-  .logout-btn {
-    background: rgba(255,255,255,0.15);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.3);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'Rubik', sans-serif;
-    transition: background 0.2s;
-  }
-  .logout-btn:hover { background: rgba(255,255,255,0.25); }
-
-  /* TABS */
-  .tabs {
-    background: white;
-    display: flex;
-    gap: 0;
-    padding: 0 32px;
-    border-bottom: 2px solid var(--gray-200);
-    overflow-x: auto;
-  }
-  .tab {
-    padding: 14px 20px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--gray-500);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
-    transition: all 0.2s;
-    font-family: 'Rubik', sans-serif;
-    background: none;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    white-space: nowrap;
-  }
-  .tab.active {
-    color: var(--red);
-    border-bottom-color: var(--red);
-    font-weight: 600;
-  }
-  .tab:hover:not(.active) { color: var(--gray-700); }
-
-  /* MAIN */
-  .main { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
-
-  .page { display: none; }
-  .page.active { display: block; }
-
-  /* STAT CARDS */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: white;
-    border-radius: var(--radius);
-    padding: 20px;
-    box-shadow: var(--shadow-card);
-    border-left: 4px solid var(--gray-200);
-    transition: transform 0.2s;
-  }
-  .stat-card:hover { transform: translateY(-2px); }
-  .stat-card.red { border-left-color: var(--red); }
-  .stat-card.green { border-left-color: var(--green); }
-  .stat-card.amber { border-left-color: #D97706; }
-  .stat-card.gray { border-left-color: var(--gray-300); }
-  .stat-label {
-    font-size: 12px;
-    color: var(--gray-500);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-  }
-  .stat-value {
-    font-size: 32px;
-    font-weight: 700;
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .stat-card.red .stat-value { color: var(--red); }
-  .stat-card.green .stat-value { color: var(--green); }
-  .stat-card.amber .stat-value { color: #D97706; }
-  .stat-card.gray .stat-value { color: var(--gray-700); }
-  .stat-sub { font-size: 12px; color: var(--gray-500); }
-
-  /* KPI BAR */
-  .kpi-section {
-    background: white;
-    border-radius: var(--radius);
-    padding: 24px;
-    box-shadow: var(--shadow-card);
-    margin-bottom: 24px;
-  }
-  .section-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--gray-900);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-title::before {
-    content: '';
-    display: inline-block;
-    width: 4px;
-    height: 18px;
-    background: var(--red);
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-  .kpi-bar-wrap {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 12px;
-  }
-  .kpi-bar-label { font-size: 13px; color: var(--gray-700); width: 140px; flex-shrink: 0; font-weight: 500; }
-  .kpi-bar-track {
-    flex: 1;
-    height: 10px;
-    background: var(--gray-200);
-    border-radius: 99px;
-    overflow: hidden;
-  }
-  .kpi-bar-fill {
-    height: 100%;
-    border-radius: 99px;
-    transition: width 1s cubic-bezier(0.4,0,0.2,1);
-    background: var(--red);
-  }
-  .kpi-bar-fill.green { background: var(--green); }
-  .kpi-bar-fill.amber { background: #D97706; }
-  .kpi-bar-val { font-size: 13px; font-weight: 600; color: var(--gray-900); width: 44px; text-align: right; }
-
-  /* OVERALL KPI SCORE */
-  .kpi-score-box {
-    background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
-    color: white;
-    border-radius: var(--radius);
-    padding: 20px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-  }
-  .kpi-score-title { font-size: 13px; opacity: 0.8; font-weight: 400; margin-bottom: 4px; }
-  .kpi-score-num { font-size: 48px; font-weight: 700; line-height: 1; }
-  .kpi-score-sub { font-size: 12px; opacity: 0.75; margin-top: 4px; }
-  .kpi-score-right { text-align: right; }
-  .kpi-score-grade { font-size: 56px; font-weight: 700; opacity: 0.9; }
-  .kpi-threshold-note { font-size: 11px; opacity: 0.7; margin-top: 4px; }
-
-  /* TASKS TABLE */
-  .table-section {
-    background: white;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-card);
-    margin-bottom: 24px;
-    overflow: hidden;
-  }
-  .table-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--gray-200);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .table-header .section-title { margin-bottom: 0; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  thead th {
-    background: var(--gray-50);
-    padding: 10px 16px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--gray-500);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid var(--gray-200);
-  }
-  tbody tr {
-    border-bottom: 1px solid var(--gray-100);
-    transition: background 0.15s;
-  }
-  tbody tr:hover { background: var(--gray-50); }
-  tbody tr:last-child { border-bottom: none; }
-  td { padding: 11px 16px; color: var(--gray-700); vertical-align: top; }
-  td:first-child { font-weight: 500; color: var(--gray-900); }
-
-  .badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .badge-ok { background: var(--green-light); color: #1A6B52; }
-  .badge-late { background: var(--danger-light); color: var(--red-dark); }
-  .badge-pending { background: var(--amber-light); color: var(--amber); }
-  .badge-format {
-    background: var(--red-light);
-    color: var(--red-dark);
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-weight: 500;
-  }
-
-  /* FILTER BAR */
-  .filter-bar {
-    background: white;
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    box-shadow: var(--shadow-card);
-    margin-bottom: 16px;
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
-    gap: 10px;
-    align-items: end;
-  }
-  .filter-group { display: flex; flex-direction: column; gap: 4px; }
-  .filter-group label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--gray-500);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-  }
-  .filter-group input, .filter-group select {
-    font-family: 'Rubik', sans-serif;
-    font-size: 12px;
-    padding: 7px 10px;
-    border: 1.5px solid var(--gray-200);
-    border-radius: var(--radius-sm);
-    color: var(--gray-900);
-    background: white;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .filter-group input:focus, .filter-group select:focus { border-color: var(--red); }
-
-  /* ADD TASK FORM */
-  .add-form {
-    background: white;
-    border-radius: var(--radius);
-    padding: 24px;
-    box-shadow: var(--shadow-card);
-    margin-bottom: 24px;
-  }
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group.full { grid-column: 1 / -1; }
-  label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--gray-700);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-  }
-  input, select, textarea {
-    font-family: 'Rubik', sans-serif;
-    font-size: 13px;
-    padding: 9px 12px;
-    border: 1.5px solid var(--gray-200);
-    border-radius: var(--radius-sm);
-    color: var(--gray-900);
-    background: white;
-    transition: border-color 0.2s;
-    outline: none;
-  }
-  input:focus, select:focus, textarea:focus { border-color: var(--red); }
-  textarea { resize: vertical; min-height: 64px; }
-
-  .btn {
-    font-family: 'Rubik', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 10px 20px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-  }
-  .btn-primary {
-    background: var(--red);
-    color: white;
-  }
-  .btn-primary:hover { background: var(--red-dark); }
-  .btn-outline {
-    background: white;
-    color: var(--red);
-    border: 1.5px solid var(--red);
-  }
-  .btn-outline:hover { background: var(--red-light); }
-  .btn-green {
-    background: var(--green);
-    color: white;
-    border: none;
-  }
-  .btn-green:hover { background: #1A6B52; }
-  .btn-sm { padding: 5px 12px; font-size: 12px; }
-  .btn-danger-sm {
-    background: var(--danger-light);
-    color: var(--red-dark);
-    border: none;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Rubik', sans-serif;
-  }
-  .btn-gray-sm {
-    background: var(--gray-100);
-    color: var(--gray-700);
-    border: none;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Rubik', sans-serif;
-  }
-  .btn-blue-sm {
-    background: #EBF5FF;
-    color: #1D4ED8;
-    border: none;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Rubik', sans-serif;
-  }
-
-  /* FORMAT BREAKDOWN */
-  .format-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .format-card {
-    background: white;
-    border-radius: var(--radius-sm);
-    padding: 16px;
-    box-shadow: var(--shadow);
-    text-align: center;
-    border-top: 3px solid var(--red-light);
-    transition: all 0.2s;
-  }
-  .format-card:hover { border-top-color: var(--red); transform: translateY(-1px); }
-  .format-name { font-size: 12px; font-weight: 600; color: var(--gray-700); margin-bottom: 8px; }
-  .format-stats { display: flex; justify-content: center; gap: 12px; }
-  .format-stat { text-align: center; }
-  .format-stat-val { font-size: 20px; font-weight: 700; }
-  .format-stat-val.red { color: var(--red); }
-  .format-stat-val.green { color: var(--green); }
-  .format-stat-val.amber { color: #D97706; }
-  .format-stat-lbl { font-size: 10px; color: var(--gray-500); margin-top: 2px; }
-
-  /* MONTH SELECTOR */
-  .month-nav {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
-  .month-nav select {
-    font-size: 14px;
-    font-weight: 500;
-    padding: 8px 14px;
-    border-color: var(--gray-200);
-    min-width: 160px;
-  }
-
-  /* SLA RULES PAGE */
-  .rules-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-  .rule-card {
-    background: white;
-    border-radius: var(--radius);
-    padding: 20px;
-    box-shadow: var(--shadow-card);
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-  }
-  .rule-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: var(--red-light);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 18px;
-  }
-  .rule-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-  .rule-desc { font-size: 13px; color: var(--gray-500); line-height: 1.6; }
-  .rule-deadline {
-    display: inline-block;
-    background: var(--red);
-    color: white;
-    padding: 2px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-top: 8px;
-  }
-
-  /* EMPTY STATE */
-  .empty-state {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--gray-500);
-  }
-  .empty-state .big { font-size: 40px; margin-bottom: 12px; }
-  .empty-state p { font-size: 14px; }
-
-  /* REPORT PAGE */
-  .report-card {
-    background: white;
-    border-radius: var(--radius);
-    padding: 28px;
-    box-shadow: var(--shadow-card);
-    margin-bottom: 20px;
-  }
-  .report-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid var(--red-light);
-  }
-  .report-logo { font-size: 20px; font-weight: 700; color: var(--red); }
-  .report-period { font-size: 13px; color: var(--gray-500); }
-
-  .verdict-box {
-    border-radius: var(--radius-sm);
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .verdict-box.good { background: var(--green-light); }
-  .verdict-box.bad { background: var(--danger-light); }
-  .verdict-box.warn { background: var(--amber-light); }
-  .verdict-icon { font-size: 24px; }
-  .verdict-text { font-size: 14px; font-weight: 500; }
-  .verdict-text.good { color: #1A6B52; }
-  .verdict-text.bad { color: var(--red-dark); }
-  .verdict-text.warn { color: var(--amber); }
-
-  /* NOTIFICATION */
-  .notif {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--gray-900);
-    color: white;
-    padding: 12px 20px;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-weight: 500;
-    z-index: 9999;
-    display: none;
-    animation: slideIn 0.3s ease;
-  }
-  @keyframes slideIn {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  /* MODAL */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-box {
-    background: white;
-    border-radius: var(--radius);
-    padding: 28px;
-    width: 480px;
-    max-width: 90vw;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    max-height: 80vh;
-    overflow-y: auto;
-  }
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--gray-200);
-  }
-  .modal-title { font-size: 16px; font-weight: 600; color: var(--gray-900); }
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    color: var(--gray-500);
-    padding: 4px;
-    font-family: 'Rubik', sans-serif;
-  }
-  .modal-form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-  .modal-form-group label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--gray-700);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-  }
-  .modal-form-group input,
-  .modal-form-group select,
-  .modal-form-group textarea {
-    width: 100%;
-    font-family: 'Rubik', sans-serif;
-    font-size: 13px;
-    padding: 9px 12px;
-    border: 1.5px solid var(--gray-200);
-    border-radius: var(--radius-sm);
-    color: var(--gray-900);
-    background: white;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .modal-form-group input:focus,
-  .modal-form-group select:focus,
-  .modal-form-group textarea:focus { border-color: var(--red); }
-
-  /* ADMIN TABLE */
-  .admin-table-section {
-    background: white;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-card);
-    overflow: hidden;
-    margin-bottom: 24px;
-  }
-  .admin-table-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--gray-200);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  /* COMMENT */
-  .comment-item {
-    background: var(--gray-50);
-    border-left: 3px solid var(--red-mid);
-    border-radius: 0 4px 4px 0;
-    padding: 6px 10px;
-    margin-top: 4px;
-    font-size: 11px;
-    color: var(--gray-700);
-    line-height: 1.5;
-  }
-  .comment-meta {
-    font-size: 10px;
-    color: var(--gray-500);
-    margin-bottom: 2px;
-    font-weight: 500;
-  }
-
-  .flex-end { display: flex; justify-content: flex-end; gap: 10px; }
-  .mt-8 { margin-top: 8px; }
-  .gap-8 { gap: 8px; }
-
-  canvas { max-height: 260px; }
-
-  @media (max-width: 900px) {
-    .filter-bar { grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 768px) {
-    .main { padding: 16px; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .format-grid { grid-template-columns: repeat(2, 1fr); }
-    .form-grid { grid-template-columns: 1fr; }
-    .rules-grid { grid-template-columns: 1fr; }
-    .header { padding: 0 16px; }
-    .tabs { padding: 0 16px; }
-    .filter-bar { grid-template-columns: 1fr; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Al-Sahiy CRM — Marketing tizimi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .login-screen {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, #A02028 0%, #C92C35 50%, #E8A0A4 100%);
+      display: flex; align-items: center; justify-content: center; z-index: 500;
+    }
+    .login-card {
+      background: white; border-radius: 16px; padding: 40px;
+      width: 380px; max-width: 90vw; box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+    }
+    .login-logo { font-size: 28px; font-weight: 700; color: var(--red); text-align: center; margin-bottom: 4px; }
+    .login-subtitle { font-size: 13px; color: var(--gray-500); text-align: center; margin-bottom: 28px; }
+    .login-error {
+      background: var(--danger-light); color: var(--red-dark);
+      padding: 8px 12px; border-radius: var(--radius-sm); font-size: 13px;
+    }
+    #configError {
+      position: fixed; inset: 0; background: #1A1A1A; color: white;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px; text-align: center; padding: 24px;
+    }
+    .sales-subtab {}
+    .admin-subtab {}
+    .form-group-full { grid-column: 1 / -1; }
+  </style>
 </head>
 <body>
 
+<!-- CONFIG ERROR (shown if config.js missing) -->
+<div id="configError" style="display:none">
+  <div style="font-size:48px">⚙️</div>
+  <div style="font-size:22px;font-weight:700">Konfiguratsiya topilmadi</div>
+  <div style="font-size:14px;opacity:0.7;max-width:420px">
+    <code>config.js</code> fayli topilmadi yoki noto'g'ri. Iltimos,
+    <code>config.example.js</code> faylini nusxa oling va
+    Supabase ma'lumotlarini kiriting.
+  </div>
+</div>
+
 <!-- LOGIN SCREEN -->
-<div id="loginScreen" class="login-overlay">
+<div id="loginScreen" class="login-screen" style="display:none">
   <div class="login-card">
-    <div class="login-logo">
-      <div class="login-logo-text">al-sahíy</div>
-      <div class="login-logo-sub">Dizayner SLA Monitoring Tizimi</div>
+    <div class="login-logo">al-sahíy</div>
+    <div class="login-subtitle">Dizayner SLA &amp; CRM Tizimi</div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="email@example.com">
     </div>
-    <div class="login-title">Tizimga kirish</div>
-    <div class="login-error" id="loginError">Login yoki parol noto'g'ri</div>
-    <div class="login-field">
-      <label>Foydalanuvchi nomi</label>
-      <input type="text" id="loginUsername" placeholder="username" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <div class="login-field">
+    <div class="form-group" style="margin-top:12px">
       <label>Parol</label>
-      <input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <input type="password" id="loginPassword" placeholder="••••••••">
     </div>
-    <button class="login-btn" onclick="doLogin()">Kirish</button>
+    <div id="loginError" style="display:none" class="login-error"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:20px" onclick="App.handleLogin()">Kirish</button>
+    <div style="margin-top:16px;text-align:center;font-size:12px;color:var(--gray-500)">
+      Al-Sahiy Supermarket — Marketing bo'limi
+    </div>
   </div>
 </div>
 
 <!-- MAIN APP -->
 <div id="mainApp" style="display:none">
 
-<div class="header">
-  <div>
-    <div class="header-logo">al-sahíy <span>/ Dizayner SLA</span></div>
-    <div class="header-sub">Grafik dizayner deadline monitoring tizimi</div>
-  </div>
-  <div class="header-right">
-    <div class="month-badge" id="currentMonthBadge">— oy —</div>
-    <div class="user-info">
-      <span class="user-name" id="headerUserName"></span>
-      <span class="role-badge" id="headerRoleBadge"></span>
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="header-logo">al-sahíy <span>/ CRM</span></div>
+      <div class="header-sub" id="headerSub">Marketing boshqaruv tizimi</div>
     </div>
-    <button class="logout-btn" onclick="doLogout()">Chiqish</button>
-  </div>
-</div>
-
-<div class="tabs" id="tabsBar">
-  <!-- rendered by renderTabs() -->
-</div>
-
-<div class="main">
-
-  <!-- DASHBOARD PAGE -->
-  <div class="page" id="page-dashboard">
-    <div class="month-nav">
-      <select id="dashMonth" onchange="renderDashboard()"></select>
-      <span style="font-size:13px;color:var(--gray-500)">oyining ko'rsatkichlari</span>
-    </div>
-    <div class="kpi-score-box" id="kpiScoreBox">
-      <div class="kpi-score-left">
-        <div class="kpi-score-title">Umumiy KPI ball (oylik)</div>
-        <div class="kpi-score-num" id="kpiScoreNum">—</div>
-        <div class="kpi-score-sub" id="kpiScoreSub">Hali topshiriq yo'q</div>
+    <div class="header-right">
+      <div class="lang-switch">
+        <button class="lang-btn active" id="langUz" onclick="App.setLanguage('uz')">UZ</button>
+        <button class="lang-btn" id="langRu" onclick="App.setLanguage('ru')">RU</button>
       </div>
-      <div class="kpi-score-right">
-        <div class="kpi-score-grade" id="kpiGrade">—</div>
-        <div class="kpi-threshold-note">Qizil chegara: 60 ball</div>
-      </div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card red">
-        <div class="stat-label">Jami topshiriq</div>
-        <div class="stat-value" id="statTotal">0</div>
-        <div class="stat-sub">Bu oy</div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-label">O'z vaqtida</div>
-        <div class="stat-value" id="statOntime">0</div>
-        <div class="stat-sub" id="statOntimePct">—</div>
-      </div>
-      <div class="stat-card amber">
-        <div class="stat-label">Kechikkan</div>
-        <div class="stat-value" id="statLate">0</div>
-        <div class="stat-sub" id="statLatePct">—</div>
-      </div>
-      <div class="stat-card gray">
-        <div class="stat-label">Qayta ishlangan</div>
-        <div class="stat-value" id="statRevision">0</div>
-        <div class="stat-sub" id="statRevisionPct">—</div>
-      </div>
-    </div>
-    <div class="kpi-section">
-      <div class="section-title">KPI ko'rsatkichlari tahlili</div>
-      <div id="kpiBars"></div>
-    </div>
-    <div class="format-grid" id="formatCards"></div>
-    <div class="table-section">
-      <div class="table-header">
-        <div class="section-title">So'nggi topshiriqlar</div>
-      </div>
-      <div id="recentTasksTable"></div>
+      <div id="userBadge" class="month-badge"></div>
+      <button class="btn" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);font-size:12px;padding:6px 14px" onclick="App.logout()">↩ Chiqish</button>
     </div>
   </div>
 
-  <!-- TASKS PAGE (admin/manager) -->
-  <div class="page" id="page-tasks">
-    <div class="month-nav">
-      <select id="tasksMonth" onchange="renderTasks()"></select>
-      <span style="font-size:13px;color:var(--gray-500)">oyining topshiriqlari</span>
-      <button class="btn btn-outline btn-sm" id="tasksAddBtn" onclick="showPage('add')">+ Yangi qo'shish</button>
-      <button class="btn btn-outline btn-sm" onclick="exportCSV('tasks')">CSV yuklab olish</button>
-      <button class="btn btn-outline btn-sm" onclick="exportExcel('tasks')">Excel yuklab olish</button>
-    </div>
-    <div class="filter-bar" id="tasksFilterBar">
-      <div class="filter-group">
-        <label>Qidiruv</label>
-        <input type="text" id="fSearch" placeholder="Topshiriq nomi..." oninput="applyFilters()">
+  <!-- TABS (rendered dynamically based on role) -->
+  <div class="tabs" id="mainTabs"></div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- PAGE: DASHBOARD -->
+    <div class="page" id="page-dashboard">
+      <div class="month-nav">
+        <select id="dashMonth" onchange="App.renderDashboard()"></select>
+        <span style="font-size:13px;color:var(--gray-500)">oyining ko'rsatkichlari</span>
       </div>
-      <div class="filter-group">
-        <label>Holat</label>
-        <select id="fStatus" onchange="applyFilters()">
-          <option value="">Barchasi</option>
-          <option value="pending">Jarayonda</option>
-          <option value="done_ontime">O'z vaqtida</option>
-          <option value="done_late">Kechikkan</option>
-          <option value="revision">Revision</option>
+      <div class="kpi-score-box" id="kpiScoreBox">
+        <div class="kpi-score-left">
+          <div class="kpi-score-title">Umumiy KPI ball (oylik)</div>
+          <div class="kpi-score-num" id="kpiScoreNum">—</div>
+          <div class="kpi-score-sub" id="kpiScoreSub">Yuklanmoqda...</div>
+        </div>
+        <div class="kpi-score-right">
+          <div class="kpi-score-grade" id="kpiGrade">—</div>
+          <div class="kpi-threshold-note">Qizil chegara: 60 ball</div>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card red"><div class="stat-label">Jami topshiriq</div><div class="stat-value" id="statTotal">0</div><div class="stat-sub">Bu oy</div></div>
+        <div class="stat-card green"><div class="stat-label">O'z vaqtida</div><div class="stat-value" id="statOntime">0</div><div class="stat-sub" id="statOntimePct">—</div></div>
+        <div class="stat-card amber"><div class="stat-label">Kechikkan</div><div class="stat-value" id="statLate">0</div><div class="stat-sub" id="statLatePct">—</div></div>
+        <div class="stat-card gray"><div class="stat-label">Qayta ishlangan</div><div class="stat-value" id="statRevision">0</div><div class="stat-sub" id="statRevisionPct">—</div></div>
+      </div>
+      <!-- Sales mini-summary (admin/manager/analyst) -->
+      <div id="dashSalesMini" style="display:none" class="kpi-section">
+        <div class="section-title">Joriy hafta savdosi</div>
+        <div id="dashSalesContent"></div>
+      </div>
+      <div class="kpi-section">
+        <div class="section-title">KPI ko'rsatkichlari tahlili</div>
+        <div id="kpiBars"></div>
+      </div>
+      <div class="format-grid" id="formatCards"></div>
+      <div class="table-section">
+        <div class="table-header"><div class="section-title">So'nggi topshiriqlar</div></div>
+        <div id="recentTasksTable"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: TASKS (admin/manager) -->
+    <div class="page" id="page-tasks">
+      <div class="add-form" style="padding:16px 20px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr auto;gap:10px;align-items:end">
+          <div class="form-group">
+            <label>Qidirish</label>
+            <input type="text" id="filterSearch" placeholder="Topshiriq nomi..." oninput="App.applyFilters()">
+          </div>
+          <div class="form-group">
+            <label>Holat</label>
+            <select id="filterStatus" onchange="App.applyFilters()">
+              <option value="">Barchasi</option>
+              <option value="pending">Jarayonda</option>
+              <option value="done_ontime">O'z vaqtida</option>
+              <option value="done_late">Kechikkan</option>
+              <option value="revision">Revision</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Format</label>
+            <select id="filterFormat" onchange="App.applyFilters()">
+              <option value="">Barchasi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Bo'lim</label>
+            <select id="filterDivision" onchange="App.applyFilters()">
+              <option value="">Barchasi</option>
+              <option value="Apteka">Apteka</option>
+              <option value="Kanstovar">Kanstovar</option>
+              <option value="Xoztovar">Xoztovar</option>
+              <option value="Non markazi">Non markazi</option>
+              <option value="Texnomir">Texnomir</option>
+              <option value="Paynet">Paynet</option>
+              <option value="Al-Sahiy 1-qavat">Al-Sahiy 1-qavat</option>
+              <option value="Al-Sahiy 2-qavat">Al-Sahiy 2-qavat</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Dan</label>
+            <input type="date" id="filterDateFrom" onchange="App.applyFilters()">
+          </div>
+          <div class="form-group">
+            <label>Gacha</label>
+            <input type="date" id="filterDateTo" onchange="App.applyFilters()">
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button class="btn btn-outline btn-sm" onclick="App.clearFilters()">✕ Tozalash</button>
+          </div>
+        </div>
+      </div>
+      <div class="table-section">
+        <div class="table-header">
+          <div class="section-title">Barcha topshiriqlar</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span id="tasksCount" style="font-size:13px;color:var(--gray-500)"></span>
+            <button class="btn btn-outline btn-sm" onclick="App.exportTasksCSV()">CSV</button>
+            <button class="btn btn-outline btn-sm" onclick="App.exportTasksExcel()">Excel</button>
+            <button class="btn btn-primary btn-sm" onclick="App.showAddTask()">+ Yangi</button>
+          </div>
+        </div>
+        <div id="allTasksTable"></div>
+        <div id="tasksPagination" class="pagination" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: MY TASKS (designer) -->
+    <div class="page" id="page-my-tasks">
+      <div class="table-section">
+        <div class="table-header">
+          <div class="section-title">Mening topshiriqlarim</div>
+          <span id="myTasksCount" style="font-size:13px;color:var(--gray-500)"></span>
+        </div>
+        <div id="myTasksTable"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: SALES ANALYTICS -->
+    <div class="page" id="page-sales">
+      <div class="period-picker" id="salesPeriodPicker">
+        <button class="period-btn active" onclick="App.setSalesPeriod('this',event)">Bu hafta</button>
+        <button class="period-btn" onclick="App.setSalesPeriod('last',event)">O'tgan hafta</button>
+        <button class="period-btn" onclick="App.setSalesPeriod('4weeks',event)">4 hafta</button>
+        <select id="salesWeekSelect" onchange="App.onSalesWeekChange()" style="font-size:13px;padding:7px 12px;border:1.5px solid var(--gray-200);border-radius:20px;min-width:180px">
+          <option value="">Haftani tanlang...</option>
         </select>
-      </div>
-      <div class="filter-group">
-        <label>Format</label>
-        <select id="fFormat" onchange="applyFilters()"><option value="">Barchasi</option></select>
-      </div>
-      <div class="filter-group">
-        <label>Bo'lim</label>
-        <select id="fDivision" onchange="applyFilters()"><option value="">Barchasi</option></select>
-      </div>
-      <div class="filter-group">
-        <label>Sanadan</label>
-        <input type="date" id="fDateFrom" onchange="applyFilters()">
-      </div>
-      <div class="filter-group">
-        <label>Sanagacha</label>
-        <input type="date" id="fDateTo" onchange="applyFilters()">
-      </div>
-      <div class="filter-group">
-        <label>&nbsp;</label>
-        <button class="btn btn-outline btn-sm" onclick="clearFilters()">Tozalash</button>
-      </div>
-    </div>
-    <div class="table-section">
-      <div class="table-header">
-        <div class="section-title">Barcha topshiriqlar</div>
-        <div id="tasksCount" style="font-size:13px;color:var(--gray-500)"></div>
-      </div>
-      <div id="allTasksTable"></div>
-    </div>
-  </div>
-
-  <!-- DESIGNER MY TASKS PAGE -->
-  <div class="page" id="page-mytasks">
-    <div class="month-nav">
-      <span style="font-size:15px;font-weight:600;color:var(--gray-900)">Mening topshiriqlarim</span>
-    </div>
-    <div class="table-section">
-      <div class="table-header">
-        <div class="section-title">Barcha topshiriqlar</div>
-        <div id="myTasksCount" style="font-size:13px;color:var(--gray-500)"></div>
-      </div>
-      <div id="myTasksTable"></div>
-    </div>
-  </div>
-
-  <!-- ADD TASK PAGE -->
-  <div class="page" id="page-add">
-    <div class="add-form">
-      <div class="section-title" style="margin-bottom:20px">Yangi topshiriq qo'shish</div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Topshiriq nomi *</label>
-          <input type="text" id="taskName" placeholder="Masalan: Ramazon aksiya banneri">
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <button class="period-btn" id="cmpWow" onclick="App.setCompareMode('wow')">WoW</button>
+          <button class="period-btn active" id="cmpYoy" onclick="App.setCompareMode('yoy')">YoY</button>
         </div>
-        <div class="form-group">
-          <label>Format *</label>
-          <select id="taskFormat">
-            <option value="">— tanlang —</option>
+      </div>
+
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="App.showSalesSubTab('overview')">📊 Umumiy ko'rinish</button>
+        <button class="sub-tab" onclick="App.showSalesSubTab('divisions')">🏪 Bo'limlar bo'yicha</button>
+        <button class="sub-tab" onclick="App.showSalesSubTab('products')">📦 Top mahsulotlar</button>
+      </div>
+
+      <!-- Sub-tab: Overview -->
+      <div id="sales-overview" class="sales-subtab">
+        <div class="stats-grid" id="salesKpiCards"></div>
+        <div class="kpi-section" style="margin-bottom:24px">
+          <div class="section-title">Haftalik tushum dinamikasi</div>
+          <div style="height:240px"><canvas id="revenueChart"></canvas></div>
+        </div>
+        <div class="kpi-section">
+          <div class="section-title">Bo'limlar bo'yicha taqsimot</div>
+          <div id="divisionBarsOverview"></div>
+        </div>
+      </div>
+
+      <!-- Sub-tab: Divisions -->
+      <div id="sales-divisions" class="sales-subtab" style="display:none">
+        <div class="table-section">
+          <div class="table-header">
+            <div class="section-title">Bo'limlar ko'rsatkichlari</div>
+            <button class="btn btn-outline btn-sm" onclick="App.exportSalesExcel()">Excel</button>
+          </div>
+          <div id="divisionsTable"></div>
+        </div>
+      </div>
+
+      <!-- Sub-tab: Products -->
+      <div id="sales-products" class="sales-subtab" style="display:none">
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+          <input type="text" id="productSearch" placeholder="Mahsulot nomi / SKU..." style="flex:1;min-width:200px" oninput="App.loadTopProducts()">
+          <select id="productDivision" onchange="App.loadTopProducts()">
+            <option value="">Barcha bo'limlar</option>
+            <option value="Apteka">Apteka</option>
+            <option value="Kanstovar">Kanstovar</option>
+            <option value="Xoztovar">Xoztovar</option>
+            <option value="Non markazi">Non markazi</option>
+            <option value="Texnomir">Texnomir</option>
+            <option value="Paynet">Paynet</option>
+            <option value="Al-Sahiy 1-qavat">Al-Sahiy 1-qavat</option>
+            <option value="Al-Sahiy 2-qavat">Al-Sahiy 2-qavat</option>
           </select>
-        </div>
-        <div class="form-group">
-          <label>Do'kon / Bo'lim</label>
-          <select id="taskDivision"></select>
-        </div>
-        <div class="form-group">
-          <label>Berilgan sana *</label>
-          <input type="date" id="taskGiven">
-        </div>
-        <div class="form-group">
-          <label>Deadline (oxirgi muddat) *</label>
-          <input type="date" id="taskDeadline">
-        </div>
-        <div class="form-group">
-          <label>Bajarilgan sana</label>
-          <input type="date" id="taskDone">
-        </div>
-        <div class="form-group">
-          <label>Holat</label>
-          <select id="taskStatus">
-            <option value="pending">Jarayonda</option>
-            <option value="done_ontime">Bajarildi — o'z vaqtida</option>
-            <option value="done_late">Bajarildi — kech</option>
-            <option value="revision">Qayta ishlash kerak</option>
+          <select id="productSort" onchange="App.loadTopProducts()">
+            <option value="revenue">Tushum bo'yicha</option>
+            <option value="quantity_sold">Miqdor bo'yicha</option>
+            <option value="avg_check">O'rtacha chek bo'yicha</option>
           </select>
+          <button class="btn btn-outline btn-sm" onclick="App.exportProductsExcel()">Excel</button>
         </div>
-        <div class="form-group">
-          <label>Kechikish sababi (agar bo'lsa)</label>
-          <input type="text" id="taskReason" placeholder="Masalan: Kontent kech berildi">
-        </div>
-        <div class="form-group">
-          <label>Izoh</label>
-          <input type="text" id="taskNote" placeholder="Qo'shimcha ma'lumot">
+        <div class="table-section">
+          <div id="productsTable"></div>
+          <div id="productsPagination" class="pagination" style="display:none"></div>
         </div>
       </div>
-      <div class="flex-end">
-        <button class="btn btn-outline" onclick="resetForm()">Tozalash</button>
-        <button class="btn btn-primary" onclick="addTask()">✓ Saqlash</button>
+    </div>
+
+    <!-- PAGE: REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="month-nav">
+        <select id="reportMonth" onchange="App.renderReport()"></select>
+        <span style="font-size:13px;color:var(--gray-500)">oyi uchun hisobot</span>
+        <button class="btn btn-outline btn-sm" onclick="App.exportReportExcel()">Excel</button>
+        <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Chop etish</button>
+      </div>
+      <div id="reportContent"></div>
+    </div>
+
+    <!-- PAGE: SLA RULES -->
+    <div class="page" id="page-sla">
+      <div class="kpi-section" style="margin-bottom:24px">
+        <div class="section-title">KPI hisoblash formulasi</div>
+        <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:16px;font-size:13px;color:var(--gray-700);line-height:1.9">
+          <strong>Umumiy KPI ball (100 dan)</strong><br>
+          🔴 O'z vaqtida bajarish × <strong>90%</strong> og'irlik<br>
+          🔵 Qayta ishlash (revision) kamligiga bonus × <strong>10%</strong> og'irlik<br><br>
+          <strong>Formula:</strong> KPI = (Ontime%) × 0.90 + (100 − Revision%) × 0.10<br><br>
+          ⚠️ <strong>Qizil chegara:</strong> 60 balldan past = muammo
+        </div>
+      </div>
+      <div id="slaRulesContent"></div>
+    </div>
+
+    <!-- PAGE: ADMIN -->
+    <div class="page" id="page-admin">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="App.showAdminTab('users')">👥 Foydalanuvchilar</button>
+        <button class="sub-tab" onclick="App.showAdminTab('upload')">📤 Ma'lumot yuklash</button>
+        <button class="sub-tab" onclick="App.showAdminTab('logs')">📋 Yuklash tarixi</button>
+      </div>
+
+      <!-- Users -->
+      <div id="admin-users" class="admin-subtab">
+        <div class="table-section">
+          <div class="table-header">
+            <div class="section-title">Foydalanuvchilar</div>
+            <button class="btn btn-primary btn-sm" onclick="App.showAddUser()">+ Qo'shish</button>
+          </div>
+          <div id="usersTable"></div>
+        </div>
+      </div>
+
+      <!-- Upload -->
+      <div id="admin-upload" class="admin-subtab" style="display:none">
+        <div class="add-form">
+          <div class="section-title" style="margin-bottom:16px">Sotuv ma'lumotlarini yuklash</div>
+          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" ondragover="App.onDragOver(event)" ondragleave="App.onDragLeave(event)" ondrop="App.onDrop(event)">
+            <div class="drop-zone-icon">📂</div>
+            <div class="drop-zone-text">Excel yoki CSV faylni bu yerga tashlang</div>
+            <div class="drop-zone-sub">yoki bosib faylni tanlang • .xlsx, .xls, .csv</div>
+          </div>
+          <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="App.onFileSelect(event)">
+          <div style="margin-top:12px;display:flex;gap:10px">
+            <button class="btn btn-outline btn-sm" onclick="Exporter.generateSalesTemplate()">⬇ Shablon yuklab olish</button>
+          </div>
+          <div id="uploadPreview" style="display:none;margin-top:20px">
+            <div class="section-title" style="margin-bottom:12px">Ko'rib chiqish (birinchi 10 qator)</div>
+            <div id="previewTable"></div>
+            <div id="uploadErrors" style="color:var(--red);font-size:13px;margin-top:8px"></div>
+            <div style="margin-top:12px">
+              <div class="progress-wrap" id="uploadProgress" style="display:none"><div class="progress-fill" id="uploadProgressFill" style="width:0%"></div></div>
+              <div id="uploadProgressText" style="font-size:12px;color:var(--gray-500);margin-top:4px"></div>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:10px">
+              <button class="btn btn-primary" id="confirmUploadBtn" onclick="App.confirmUpload()">✓ Tasdiqlash va yuklash</button>
+              <button class="btn btn-outline" onclick="App.cancelUpload()">Bekor qilish</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logs -->
+      <div id="admin-logs" class="admin-subtab" style="display:none">
+        <div class="table-section">
+          <div class="table-header"><div class="section-title">Yuklash tarixi</div></div>
+          <div id="logsTable"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- REPORT PAGE -->
-  <div class="page" id="page-report">
-    <div class="month-nav">
-      <select id="reportMonth" onchange="renderReport()"></select>
-      <span style="font-size:13px;color:var(--gray-500)">oyi uchun hisobot</span>
-      <button class="btn btn-outline btn-sm" onclick="exportCSV('report')">CSV yuklab olish</button>
-      <button class="btn btn-outline btn-sm" onclick="exportExcel('report')">Excel yuklab olish</button>
-    </div>
-    <div id="reportContent"></div>
-  </div>
+  </div><!-- .main -->
+</div><!-- #mainApp -->
 
-  <!-- RULES PAGE -->
-  <div class="page" id="page-rules">
-    <div class="kpi-section" style="margin-bottom:24px">
-      <div class="section-title">KPI hisoblash formulasi</div>
-      <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:16px;font-size:13px;color:var(--gray-700);line-height:1.9">
-        <strong>Umumiy KPI ball (100 dan)</strong><br>
-        O'z vaqtida bajarish × <strong>90%</strong> og'irlik<br>
-        Qayta ishlash (revision) kamligiga bonus × <strong>10%</strong> og'irlik<br>
-        <br>
-        <strong>Formula:</strong> KPI = (Ontime%) × 0.90 + (100 − Revision%) × 0.10<br>
-        <br>
-        ⚠️ <strong>Qizil chegara:</strong> 60 balldan past = muammo, eslatma beriladi
-      </div>
-    </div>
-    <div id="rulesAdminBar" style="margin-bottom:16px;display:none">
-      <button class="btn btn-primary btn-sm" onclick="openAddRuleModal()">+ Qo'shish</button>
-    </div>
-    <div id="rulesContent"></div>
+<!-- TASK DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="App.closeDrawer()"></div>
+<div class="drawer" id="taskDrawer">
+  <div class="drawer-header">
+    <div class="modal-title" id="drawerTitle">Topshiriq</div>
+    <button class="modal-close" onclick="App.closeDrawer()">✕</button>
   </div>
-
-  <!-- ADMIN PANEL PAGE -->
-  <div class="page" id="page-admin">
-    <div class="admin-table-section">
-      <div class="admin-table-header">
-        <div class="section-title" style="margin-bottom:0">Foydalanuvchilar boshqaruvi</div>
-        <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">+ Foydalanuvchi qo'shish</button>
-      </div>
-      <div id="usersTable"></div>
-    </div>
-  </div>
-
-</div><!-- /main -->
-</div><!-- /mainApp -->
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-footer" id="drawerFooter"></div>
+</div>
 
 <!-- MODAL -->
-<div id="modal" class="modal-overlay" style="display:none" onclick="closeModal(event)">
+<div id="modal" class="modal-overlay" style="display:none" onclick="App.closeModal(event)">
   <div class="modal-box" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle"></div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <button class="modal-close" onclick="App.closeModal()">✕</button>
     </div>
     <div id="modalBody"></div>
   </div>
 </div>
 
-<div class="notif" id="notif"></div>
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- CDN SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="config.js" onerror="showConfigError()"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/tasks.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/sales.js"></script>
+<script src="js/export.js"></script>
+<script src="js/upload.js"></script>
 
 <script>
-// ==================== CONSTANTS ====================
-const DEFAULT_SLA_FORMATS = [
-  { name: "SMM post",       days: 1 },
-  { name: "Stories",        days: 1 },
-  { name: "Banner",         days: 2 },
-  { name: "Video/Reels",    days: 3 },
-  { name: "Prezentatsiya",  days: 2 },
-  { name: "Narxnoma",       days: 1 },
-  { name: "POSM material",  days: 2 },
-  { name: "Hujjat/Shablon", days: 1 },
-  { name: "Boshqa",         days: 2 },
-];
+// ================================================================
+//  App Controller — Al-Sahiy CRM
+// ================================================================
+const App = {
 
-const DIVISIONS = ["Umumiy","Apteka","Kanstovar","Xoztovar","Non markazi","Texnomir","Paynet","Al-Sahiy 1-qavat","Al-Sahiy 2-qavat"];
-const MONTHS_UZ = ["Yanvar","Fevral","Mart","Aprel","May","Iyun","Iyul","Avgust","Sentabr","Oktabr","Noyabr","Dekabr"];
-const KPI_THRESHOLD = 60;
-const ONTIME_WEIGHT = 0.90;
-const REVISION_WEIGHT = 0.10;
+  // ---- State ----
+  _currentTasks: [],
+  _taskPage: 1,
+  _productPage: 1,
+  _uploadParsed: null,
+  _activeSalesSubTab: 'overview',
+  _activeAdminTab: 'users',
+  _paginationCallbacks: {},
 
-const DEFAULT_USERS = [
-  { id: 'u1', username: 'admin',     password: 'admin123',  role: 'admin',    name: 'Administrator' },
-  { id: 'u2', username: 'rahbar',    password: 'rahbar123', role: 'manager',  name: 'Fazliddin (CMO)' },
-  { id: 'u3', username: 'dizayner',  password: 'dizayn123', role: 'designer', name: 'Dizayner' },
-];
-
-// ==================== STORAGE KEYS ====================
-const KEY_TASKS   = 'alsahiy_sla_tasks';
-const KEY_RULES   = 'alsahiy_sla_rules';
-const KEY_USERS   = 'alsahiy_users';
-const KEY_SESSION = 'alsahiy_user';
-
-// ==================== DATA ====================
-let tasks = [];
-let slaRules = [];
-let users = [];
-let currentUser = null;
-
-function loadData() {
-  // Users
-  let storedUsers = localStorage.getItem(KEY_USERS);
-  if (!storedUsers) {
-    users = JSON.parse(JSON.stringify(DEFAULT_USERS));
-    localStorage.setItem(KEY_USERS, JSON.stringify(users));
-  } else {
-    users = JSON.parse(storedUsers);
-  }
-  // SLA Rules
-  let storedRules = localStorage.getItem(KEY_RULES);
-  if (!storedRules) {
-    slaRules = JSON.parse(JSON.stringify(DEFAULT_SLA_FORMATS));
-    localStorage.setItem(KEY_RULES, JSON.stringify(slaRules));
-  } else {
-    slaRules = JSON.parse(storedRules);
-  }
-  // Tasks
-  tasks = JSON.parse(localStorage.getItem(KEY_TASKS) || '[]');
-}
-
-function saveTasks()   { localStorage.setItem(KEY_TASKS, JSON.stringify(tasks)); }
-function saveRules()   { localStorage.setItem(KEY_RULES, JSON.stringify(slaRules)); }
-function saveUsers()   { localStorage.setItem(KEY_USERS, JSON.stringify(users)); }
-
-// ==================== AUTH ====================
-function doLogin() {
-  const uname = document.getElementById('loginUsername').value.trim();
-  const pass   = document.getElementById('loginPassword').value;
-  const user   = users.find(u => u.username === uname && u.password === pass);
-  if (!user) {
-    document.getElementById('loginError').style.display = 'block';
-    return;
-  }
-  document.getElementById('loginError').style.display = 'none';
-  currentUser = user;
-  sessionStorage.setItem(KEY_SESSION, JSON.stringify(user));
-  showMainApp();
-}
-
-function doLogout() {
-  currentUser = null;
-  sessionStorage.removeItem(KEY_SESSION);
-  document.getElementById('mainApp').style.display = 'none';
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('loginUsername').value = '';
-  document.getElementById('loginPassword').value = '';
-}
-
-function showMainApp() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('mainApp').style.display = 'block';
-  // Header user info
-  document.getElementById('headerUserName').textContent = currentUser.name;
-  const rb = document.getElementById('headerRoleBadge');
-  const roleLabels = { admin: 'Egasi', manager: 'Rahbar', designer: 'Dizayner' };
-  rb.textContent = roleLabels[currentUser.role] || currentUser.role;
-  rb.className = 'role-badge ' + currentUser.role;
-  init();
-}
-
-// ==================== INIT ====================
-function init() {
-  const now = new Date();
-  populateFormDropdowns();
-  populateMonthSelects(now);
-  setCurrentMonthBadge(now);
-  renderTabs();
-  // Show first available page
-  const firstTab = getAvailableTabs()[0];
-  if (firstTab) showPage(firstTab.page, true);
-}
-
-function getAvailableTabs() {
-  const role = currentUser.role;
-  if (role === 'admin') {
-    return [
-      { label: '📊 Dashboard',       page: 'dashboard' },
-      { label: '📋 Topshiriqlar',    page: 'tasks' },
-      { label: '➕ Yangi topshiriq', page: 'add' },
-      { label: '📄 Oylik hisobot',   page: 'report' },
-      { label: '📐 SLA Qoidalar',    page: 'rules' },
-      { label: '⚙️ Admin panel',     page: 'admin' },
-    ];
-  } else if (role === 'manager') {
-    return [
-      { label: '📊 Dashboard',       page: 'dashboard' },
-      { label: '📋 Topshiriqlar',    page: 'tasks' },
-      { label: '➕ Yangi topshiriq', page: 'add' },
-      { label: '📄 Oylik hisobot',   page: 'report' },
-      { label: '📐 SLA Qoidalar',    page: 'rules' },
-    ];
-  } else { // designer
-    return [
-      { label: '📊 Dashboard',              page: 'dashboard' },
-      { label: '📋 Mening topshiriqlarim',  page: 'mytasks' },
-    ];
-  }
-}
-
-function renderTabs() {
-  const tabs = getAvailableTabs();
-  const bar = document.getElementById('tabsBar');
-  bar.innerHTML = tabs.map(t =>
-    `<button class="tab" data-page="${t.page}" onclick="showPage('${t.page}')">${t.label}</button>`
-  ).join('');
-}
-
-function populateFormDropdowns() {
-  // Format select in add form
-  const fmt = document.getElementById('taskFormat');
-  if (fmt) {
-    fmt.innerHTML = '<option value="">— tanlang —</option>' +
-      slaRules.map(f => `<option value="${escHtml(f.name)}">${escHtml(f.name)}</option>`).join('');
-  }
-  // Division select in add form
-  const div = document.getElementById('taskDivision');
-  if (div) {
-    div.innerHTML = DIVISIONS.map(d => `<option value="${d}">${d}</option>`).join('');
-  }
-  // Filter dropdowns
-  const ff = document.getElementById('fFormat');
-  if (ff) {
-    ff.innerHTML = '<option value="">Barchasi</option>' +
-      slaRules.map(f => `<option value="${escHtml(f.name)}">${escHtml(f.name)}</option>`).join('');
-  }
-  const fd = document.getElementById('fDivision');
-  if (fd) {
-    fd.innerHTML = '<option value="">Barchasi</option>' +
-      DIVISIONS.map(d => `<option value="${d}">${d}</option>`).join('');
-  }
-  // Show/hide tasks "add" button for manager
-  const addBtn = document.getElementById('tasksAddBtn');
-  if (addBtn) addBtn.style.display = currentUser.role === 'designer' ? 'none' : '';
-  // Rules admin bar
-  const rulesBar = document.getElementById('rulesAdminBar');
-  if (rulesBar) rulesBar.style.display = currentUser.role === 'admin' ? 'block' : 'none';
-}
-
-function populateMonthSelects(now) {
-  const ids = ['dashMonth','tasksMonth','reportMonth'];
-  const options = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    options.push(`<option value="${d.getFullYear()}-${d.getMonth()}">${MONTHS_UZ[d.getMonth()]} ${d.getFullYear()}</option>`);
-  }
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.innerHTML = options.join(''); el.value = `${now.getFullYear()}-${now.getMonth()}`; }
-  });
-}
-
-function setCurrentMonthBadge(now) {
-  const el = document.getElementById('currentMonthBadge');
-  if (el) el.textContent = `${MONTHS_UZ[now.getMonth()]} ${now.getFullYear()}`;
-}
-
-function getSelectedMonthTasks(selectId) {
-  const val = document.getElementById(selectId)?.value;
-  if (!val) return tasks;
-  const [y, m] = val.split('-').map(Number);
-  return tasks.filter(t => {
-    const d = new Date(t.givenDate);
-    return d.getFullYear() === y && d.getMonth() === m;
-  });
-}
-
-// ==================== KPI CALC ====================
-function calcKPI(list) {
-  const total = list.length;
-  if (!total) return { total:0, ontime:0, late:0, revision:0, ontimePct:0, latePct:0, revisionPct:0, score:null };
-  const ontime   = list.filter(t => t.status === 'done_ontime').length;
-  const late     = list.filter(t => t.status === 'done_late').length;
-  const revision = list.filter(t => t.status === 'revision').length;
-  const ontimePct   = Math.round((ontime   / total) * 100);
-  const latePct     = Math.round((late     / total) * 100);
-  const revisionPct = Math.round((revision / total) * 100);
-  const score = Math.round(ontimePct * ONTIME_WEIGHT + (100 - revisionPct) * REVISION_WEIGHT);
-  return { total, ontime, late, revision, ontimePct, latePct, revisionPct, score };
-}
-
-function getGrade(score) {
-  if (score === null) return { letter:'—', color:'#888' };
-  if (score >= 95) return { letter:'A+', color:'#218F6D' };
-  if (score >= 85) return { letter:'A',  color:'#218F6D' };
-  if (score >= 75) return { letter:'B',  color:'#D97706' };
-  if (score >= KPI_THRESHOLD) return { letter:'C', color:'#D97706' };
-  return { letter:'D', color:'#C92C35' };
-}
-
-// ==================== DASHBOARD ====================
-function renderDashboard() {
-  const list = getSelectedMonthTasks('dashMonth');
-  const k = calcKPI(list);
-  const grade = getGrade(k.score);
-
-  document.getElementById('kpiScoreNum').textContent = k.score !== null ? k.score : '—';
-  document.getElementById('kpiGrade').textContent = grade.letter;
-  document.getElementById('kpiGrade').style.color = grade.letter === '—' ? 'rgba(255,255,255,0.4)' : 'white';
-  const sub = k.score === null ? 'Hali topshiriq kiritilmagan' : (k.score < KPI_THRESHOLD ? '⚠️ Qizil chegara ostida!' : '✓ Normada');
-  document.getElementById('kpiScoreSub').textContent = sub;
-  const box = document.getElementById('kpiScoreBox');
-  box.style.background = k.score !== null && k.score < KPI_THRESHOLD
-    ? 'linear-gradient(135deg,#A02028 0%,#7A1820 100%)'
-    : 'linear-gradient(135deg,#C92C35 0%,#A02028 100%)';
-
-  document.getElementById('statTotal').textContent    = k.total;
-  document.getElementById('statOntime').textContent   = k.ontime;
-  document.getElementById('statOntimePct').textContent = k.total ? `${k.ontimePct}% bajarildi` : '—';
-  document.getElementById('statLate').textContent     = k.late;
-  document.getElementById('statLatePct').textContent  = k.total ? `${k.latePct}% kechikkan` : '—';
-  document.getElementById('statRevision').textContent = k.revision;
-  document.getElementById('statRevisionPct').textContent = k.total ? `${k.revisionPct}% revision` : '—';
-
-  const bars = [
-    { label:"O'z vaqtida bajarish", val: k.ontimePct,   cls: k.ontimePct   >= 80 ? 'green' : (k.ontimePct   >= 60 ? 'amber' : '') },
-    { label:"Kechikish",            val: k.latePct,     cls: '' },
-    { label:"Qayta ishlash",        val: k.revisionPct, cls: 'amber' },
-    { label:"Umumiy KPI",           val: k.score ?? 0,  cls: (k.score??0)  >= 80 ? 'green' : ((k.score??0)  >= 60 ? 'amber' : '') },
-  ];
-  document.getElementById('kpiBars').innerHTML = bars.map(b => `
-    <div class="kpi-bar-wrap">
-      <div class="kpi-bar-label">${b.label}</div>
-      <div class="kpi-bar-track"><div class="kpi-bar-fill ${b.cls}" style="width:${b.val}%"></div></div>
-      <div class="kpi-bar-val">${b.val}%</div>
-    </div>
-  `).join('');
-
-  const formats = slaRules.map(f => {
-    const fTasks = list.filter(t => t.format === f.name);
-    const fTotal  = fTasks.length;
-    const fOntime = fTasks.filter(t => t.status === 'done_ontime').length;
-    const fLate   = fTasks.filter(t => t.status === 'done_late').length;
-    return { name:f.name, days:f.days, total:fTotal, ontime:fOntime, late:fLate };
-  }).filter(f => f.total > 0);
-
-  document.getElementById('formatCards').innerHTML = formats.length
-    ? formats.map(f => `
-      <div class="format-card">
-        <div class="format-name">${escHtml(f.name)}</div>
-        <div style="font-size:10px;color:var(--gray-500);margin-bottom:8px">SLA: ${f.days} kun</div>
-        <div class="format-stats">
-          <div class="format-stat"><div class="format-stat-val red">${f.total}</div><div class="format-stat-lbl">Jami</div></div>
-          <div class="format-stat"><div class="format-stat-val green">${f.ontime}</div><div class="format-stat-lbl">O'z vaqtida</div></div>
-          <div class="format-stat"><div class="format-stat-val ${f.late>0?'amber':'green'}">${f.late}</div><div class="format-stat-lbl">Kech</div></div>
-        </div>
-      </div>`).join('')
-    : '<p style="color:var(--gray-500);font-size:13px;grid-column:1/-1;padding:8px 0">Bu oy topshiriqlar yo\'q</p>';
-
-  const recent = [...list].sort((a,b)=>new Date(b.givenDate)-new Date(a.givenDate)).slice(0,8);
-  renderTaskTable('recentTasksTable', recent, false, false);
-}
-
-// ==================== TASKS ====================
-function renderTasks() {
-  applyFilters();
-}
-
-function applyFilters() {
-  let list = getSelectedMonthTasks('tasksMonth');
-  const search    = (document.getElementById('fSearch')?.value || '').toLowerCase();
-  const status    = document.getElementById('fStatus')?.value || '';
-  const format    = document.getElementById('fFormat')?.value || '';
-  const division  = document.getElementById('fDivision')?.value || '';
-  const dateFrom  = document.getElementById('fDateFrom')?.value || '';
-  const dateTo    = document.getElementById('fDateTo')?.value || '';
-
-  if (search)   list = list.filter(t => t.name.toLowerCase().includes(search));
-  if (status)   list = list.filter(t => t.status === status);
-  if (format)   list = list.filter(t => t.format === format);
-  if (division) list = list.filter(t => t.division === division);
-  if (dateFrom) list = list.filter(t => t.givenDate >= dateFrom);
-  if (dateTo)   list = list.filter(t => t.givenDate <= dateTo);
-
-  document.getElementById('tasksCount').textContent = `${list.length} ta topshiriq`;
-  const canDelete = currentUser.role === 'admin';
-  renderTaskTable('allTasksTable', list, true, canDelete);
-}
-
-function clearFilters() {
-  ['fSearch','fDateFrom','fDateTo'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-  ['fStatus','fFormat','fDivision'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-  applyFilters();
-}
-
-function renderMyTasks() {
-  const list = [...tasks].sort((a,b) => new Date(b.givenDate) - new Date(a.givenDate));
-  document.getElementById('myTasksCount').textContent = `${list.length} ta topshiriq`;
-  renderTaskTable('myTasksTable', list, false, false, true);
-}
-
-function renderTaskTable(containerId, list, showActions, canDelete, isDesigner) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  if (!list.length) {
-    el.innerHTML = `<div class="empty-state"><div class="big">📭</div><p>Topshiriq yo'q</p></div>`;
-    return;
-  }
-  el.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Topshiriq</th>
-          <th>Format</th>
-          <th>Bo'lim</th>
-          <th>Berilgan</th>
-          <th>Deadline</th>
-          <th>Bajarilgan</th>
-          <th>Holat</th>
-          ${showActions||isDesigner ? '<th></th>' : ''}
-        </tr>
-      </thead>
-      <tbody>
-        ${list.map(t => {
-          const comments = (t.comments||[]).map(c => `
-            <div class="comment-item">
-              <div class="comment-meta">${escHtml(c.user)} · ${c.time}</div>
-              ${escHtml(c.text)}
-            </div>`).join('');
-          let actionBtns = '';
-          if (isDesigner) {
-            actionBtns = `<td>
-              <button class="btn-blue-sm" onclick="openStatusModal('${t.id}')">Holat o'zgartirish</button>
-            </td>`;
-          } else if (showActions) {
-            actionBtns = `<td style="white-space:nowrap">
-              ${canDelete ? `<button class="btn-danger-sm" onclick="deleteTask('${t.id}')">O'chirish</button>` : ''}
-            </td>`;
-          }
-          return `
-            <tr>
-              <td>
-                ${escHtml(t.name)}
-                ${t.note ? `<div style="font-size:11px;color:var(--gray-500);margin-top:2px">${escHtml(t.note)}</div>` : ''}
-                ${comments}
-              </td>
-              <td><span class="badge-format">${escHtml(t.format)}</span></td>
-              <td style="font-size:12px;color:var(--gray-500)">${escHtml(t.division)}</td>
-              <td style="font-size:12px">${formatDate(t.givenDate)}</td>
-              <td style="font-size:12px">${formatDate(t.deadline)}</td>
-              <td style="font-size:12px">${t.doneDate ? formatDate(t.doneDate) : '<span style="color:var(--gray-300)">—</span>'}</td>
-              <td>${statusBadge(t.status)}${t.reason ? `<div style="font-size:10px;color:var(--gray-500);margin-top:2px">${escHtml(t.reason)}</div>` : ''}</td>
-              ${showActions||isDesigner ? actionBtns : ''}
-            </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
-}
-
-function statusBadge(status) {
-  const map = {
-    pending:     '<span class="badge badge-pending">Jarayonda</span>',
-    done_ontime: '<span class="badge badge-ok">✓ O\'z vaqtida</span>',
-    done_late:   '<span class="badge badge-late">⚠ Kechikkan</span>',
-    revision:    '<span class="badge badge-pending">↩ Revision</span>',
-  };
-  return map[status] || status;
-}
-
-function formatDate(str) {
-  if (!str) return '—';
-  const d = new Date(str + 'T00:00:00');
-  return `${d.getDate()}-${MONTHS_UZ[d.getMonth()].slice(0,3)} ${d.getFullYear()}`;
-}
-
-// ==================== ADD TASK ====================
-function addTask() {
-  const name     = document.getElementById('taskName').value.trim();
-  const format   = document.getElementById('taskFormat').value;
-  const given    = document.getElementById('taskGiven').value;
-  const deadline = document.getElementById('taskDeadline').value;
-  if (!name || !format || !given || !deadline) { showNotif('⚠️ Majburiy maydonlarni to\'ldiring'); return; }
-
-  const task = {
-    id:        Date.now().toString(),
-    name,
-    format,
-    division:  document.getElementById('taskDivision').value,
-    givenDate: given,
-    deadline,
-    doneDate:  document.getElementById('taskDone').value || null,
-    status:    document.getElementById('taskStatus').value,
-    reason:    document.getElementById('taskReason').value.trim(),
-    note:      document.getElementById('taskNote').value.trim(),
-    createdAt: new Date().toISOString(),
-    comments:  [],
-  };
-  tasks.push(task);
-  saveTasks();
-  resetForm();
-  showNotif('✓ Topshiriq saqlandi!');
-  showPage('tasks');
-}
-
-function resetForm() {
-  ['taskName','taskGiven','taskDeadline','taskDone','taskReason','taskNote'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  const tf = document.getElementById('taskFormat');
-  if (tf) tf.value = '';
-  const td = document.getElementById('taskDivision');
-  if (td) td.value = 'Umumiy';
-  const ts = document.getElementById('taskStatus');
-  if (ts) ts.value = 'pending';
-  document.getElementById('taskGiven').value = new Date().toISOString().split('T')[0];
-}
-
-function deleteTask(id) {
-  if (!confirm("Ushbu topshiriqni o'chirishni tasdiqlaysizmi?")) return;
-  tasks = tasks.filter(t => t.id !== id);
-  saveTasks();
-  renderTasks();
-  showNotif("Topshiriq o'chirildi");
-}
-
-// ==================== DESIGNER STATUS MODAL ====================
-function openStatusModal(taskId) {
-  const task = tasks.find(t => t.id === taskId);
-  if (!task) return;
-  document.getElementById('modalTitle').textContent = "Holat o'zgartirish";
-  document.getElementById('modalBody').innerHTML = `
-    <div style="margin-bottom:12px;font-size:13px;color:var(--gray-500)">
-      Joriy holat: ${statusBadge(task.status)}
-    </div>
-    <div class="modal-form-group">
-      <label>Yangi holat</label>
-      <select id="mNewStatus">
-        <option value="pending" ${task.status==='pending'?'selected':''}>Jarayonda</option>
-        <option value="done_ontime" ${task.status==='done_ontime'?'selected':''}>Bajarildi — o'z vaqtida</option>
-        <option value="done_late" ${task.status==='done_late'?'selected':''}>Bajarildi — kech</option>
-        <option value="revision" ${task.status==='revision'?'selected':''}>Qayta ishlash kerak</option>
-      </select>
-    </div>
-    <div class="modal-form-group">
-      <label>Izoh (ixtiyoriy)</label>
-      <textarea id="mComment" placeholder="Qo'shimcha izoh..." rows="3"></textarea>
-    </div>
-    <div class="flex-end">
-      <button class="btn btn-outline" onclick="closeModal()">Bekor qilish</button>
-      <button class="btn btn-primary" onclick="saveStatusChange('${taskId}')">Saqlash</button>
-    </div>
-  `;
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function saveStatusChange(taskId) {
-  const task = tasks.find(t => t.id === taskId);
-  if (!task) return;
-  const newStatus = document.getElementById('mNewStatus').value;
-  const comment   = document.getElementById('mComment').value.trim();
-  task.status = newStatus;
-  if (comment) {
-    if (!task.comments) task.comments = [];
-    task.comments.push({
-      user: currentUser.name,
-      time: new Date().toLocaleString('uz'),
-      text: comment,
+  // ================================================================
+  //  INIT
+  // ================================================================
+  async init() {
+    Auth.onAuthChange((event, session, profile) => {
+      if (session && profile) {
+        App.showApp(profile);
+      } else if (!session) {
+        App.showLoginScreen();
+      }
     });
-  }
-  saveTasks();
-  closeModal();
-  renderMyTasks();
-  showNotif('✓ Holat yangilandi');
-}
-
-// ==================== REPORT ====================
-function renderReport() {
-  const list = getSelectedMonthTasks('reportMonth');
-  const k = calcKPI(list);
-  const grade = getGrade(k.score);
-  const val = document.getElementById('reportMonth')?.value;
-  const [y, m] = val ? val.split('-').map(Number) : [new Date().getFullYear(), new Date().getMonth()];
-  const monthName = `${MONTHS_UZ[m]} ${y}`;
-
-  let verdictHtml = '';
-  if (k.score === null) {
-    verdictHtml = `<div class="verdict-box warn"><div class="verdict-icon">📭</div><div class="verdict-text warn">Bu oy topshiriq kiritilmagan</div></div>`;
-  } else if (k.score >= 80) {
-    verdictHtml = `<div class="verdict-box good"><div class="verdict-icon">🏆</div><div class="verdict-text good">Ajoyib natija! Dizayner SLA talablarini yuqori darajada bajarmoqda.</div></div>`;
-  } else if (k.score >= KPI_THRESHOLD) {
-    verdictHtml = `<div class="verdict-box warn"><div class="verdict-icon">⚠️</div><div class="verdict-text warn">Qoniqarli natija. Bir qancha kechikishlar kuzatildi — e'tibor talab etadi.</div></div>`;
-  } else {
-    verdictHtml = `<div class="verdict-box bad"><div class="verdict-icon">🔴</div><div class="verdict-text bad">KPI qizil chegara ostida! (${k.score} < ${KPI_THRESHOLD}). Tezkor yaxshilanish talab etiladi.</div></div>`;
-  }
-
-  const fBreakdown = slaRules.map(f => {
-    const fList = list.filter(t => t.format === f.name);
-    if (!fList.length) return null;
-    const fOntime = fList.filter(t => t.status === 'done_ontime').length;
-    const fLate   = fList.filter(t => t.status === 'done_late').length;
-    const fRev    = fList.filter(t => t.status === 'revision').length;
-    const pct = Math.round((fOntime / fList.length) * 100);
-    return { name:f.name, total:fList.length, ontime:fOntime, late:fLate, rev:fRev, pct };
-  }).filter(Boolean);
-
-  document.getElementById('reportContent').innerHTML = `
-    <div class="report-card">
-      <div class="report-header">
-        <div>
-          <div class="report-logo">al-sahíy</div>
-          <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Grafik dizayner oylik SLA hisoboti</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:22px;font-weight:700;color:var(--red)">${monthName}</div>
-          <div class="report-period">Hisobot sanasi: ${new Date().toLocaleDateString('uz')}</div>
-        </div>
-      </div>
-      ${verdictHtml}
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
-        <div style="text-align:center;padding:16px;background:var(--gray-50);border-radius:var(--radius-sm)">
-          <div style="font-size:32px;font-weight:700;color:var(--red)">${k.total}</div>
-          <div style="font-size:12px;color:var(--gray-500);margin-top:4px">Jami topshiriq</div>
-        </div>
-        <div style="text-align:center;padding:16px;background:var(--green-light);border-radius:var(--radius-sm)">
-          <div style="font-size:32px;font-weight:700;color:#218F6D">${k.ontimePct}%</div>
-          <div style="font-size:12px;color:#218F6D;margin-top:4px">O'z vaqtida bajarish</div>
-        </div>
-        <div style="text-align:center;padding:16px;background:${k.score!==null&&k.score<KPI_THRESHOLD?'var(--danger-light)':'var(--gray-50)'};border-radius:var(--radius-sm)">
-          <div style="font-size:32px;font-weight:700;color:${grade.color}">${k.score??'—'}</div>
-          <div style="font-size:12px;color:var(--gray-500);margin-top:4px">KPI ball / 100</div>
-        </div>
-      </div>
-      ${fBreakdown.length ? `
-        <div class="section-title">Format bo'yicha tahlil</div>
-        <table style="margin-top:12px">
-          <thead><tr><th>Format</th><th>Jami</th><th>O'z vaqtida</th><th>Kechikkan</th><th>Revision</th><th>Bajarish %</th></tr></thead>
-          <tbody>
-            ${fBreakdown.map(f => `
-              <tr>
-                <td><span class="badge-format">${escHtml(f.name)}</span></td>
-                <td>${f.total}</td>
-                <td style="color:#218F6D;font-weight:600">${f.ontime}</td>
-                <td style="color:${f.late>0?'var(--red)':'var(--gray-500)'};font-weight:${f.late>0?'600':'400'}">${f.late}</td>
-                <td style="color:${f.rev>0?'#D97706':'var(--gray-500)'}">${f.rev}</td>
-                <td>
-                  <div style="display:flex;align-items:center;gap:8px">
-                    <div style="width:60px;height:6px;background:var(--gray-200);border-radius:99px;overflow:hidden">
-                      <div style="width:${f.pct}%;height:100%;background:${f.pct>=80?'#218F6D':f.pct>=60?'#D97706':'#C92C35'};border-radius:99px"></div>
-                    </div>
-                    <span style="font-size:12px;font-weight:600">${f.pct}%</span>
-                  </div>
-                </td>
-              </tr>`).join('')}
-          </tbody>
-        </table>` : ''}
-      <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-500);display:flex;justify-content:space-between">
-        <span>Al-Sahiy Supermarket — Marketing bo'limi</span>
-        <span>Mas'ul: Fazliddin (CMO)</span>
-      </div>
-    </div>
-  `;
-}
-
-// ==================== RULES ====================
-function renderRules() {
-  const isAdmin = currentUser.role === 'admin';
-  const el = document.getElementById('rulesContent');
-  if (!el) return;
-
-  if (isAdmin) {
-    // Admin: editable table
-    el.innerHTML = `
-      <div class="table-section">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Format nomi</th>
-              <th>SLA (kun)</th>
-              <th>Amallar</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${slaRules.map((f, i) => `
-              <tr>
-                <td style="color:var(--gray-500)">${i+1}</td>
-                <td>${escHtml(f.name)}</td>
-                <td><span class="rule-deadline">⏱ ${f.days} kun</span></td>
-                <td style="white-space:nowrap">
-                  <button class="btn-blue-sm" style="margin-right:6px" onclick="openEditRuleModal(${i})">Tahrirlash</button>
-                  <button class="btn-danger-sm" onclick="deleteRule(${i})">O'chirish</button>
-                </td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  } else {
-    // Non-admin: read-only cards
-    el.innerHTML = `<div class="rules-grid">
-      ${slaRules.map(f => `
-        <div class="rule-card">
-          <div class="rule-icon">📋</div>
-          <div>
-            <div class="rule-title">${escHtml(f.name)}</div>
-            <div class="rule-desc">Ushbu format uchun standart bajarilish muddati. Deadline — topshiriq berilgan kundan boshlab hisoblanadi.</div>
-            <div class="rule-deadline">⏱ ${f.days} ish kun${f.days > 1 ? 'i' : ''}</div>
-          </div>
-        </div>`).join('')}
-    </div>`;
-  }
-}
-
-function openAddRuleModal() {
-  document.getElementById('modalTitle').textContent = "Yangi SLA qoida qo'shish";
-  document.getElementById('modalBody').innerHTML = `
-    <div class="modal-form-group">
-      <label>Format nomi *</label>
-      <input type="text" id="rName" placeholder="Masalan: Infografika">
-    </div>
-    <div class="modal-form-group">
-      <label>SLA muddati (kun) *</label>
-      <input type="number" id="rDays" min="1" value="1">
-    </div>
-    <div class="flex-end">
-      <button class="btn btn-outline" onclick="closeModal()">Bekor qilish</button>
-      <button class="btn btn-primary" onclick="saveNewRule()">Saqlash</button>
-    </div>
-  `;
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function saveNewRule() {
-  const name = document.getElementById('rName').value.trim();
-  const days = parseInt(document.getElementById('rDays').value);
-  if (!name || !days || days < 1) { showNotif('⚠️ Maydonlarni to\'ldiring'); return; }
-  slaRules.push({ name, days });
-  saveRules();
-  populateFormDropdowns();
-  renderRules();
-  closeModal();
-  showNotif('✓ Qoida qo\'shildi');
-}
-
-function openEditRuleModal(idx) {
-  const rule = slaRules[idx];
-  document.getElementById('modalTitle').textContent = "SLA qoidani tahrirlash";
-  document.getElementById('modalBody').innerHTML = `
-    <div class="modal-form-group">
-      <label>Format nomi *</label>
-      <input type="text" id="rName" value="${escHtml(rule.name)}">
-    </div>
-    <div class="modal-form-group">
-      <label>SLA muddati (kun) *</label>
-      <input type="number" id="rDays" min="1" value="${rule.days}">
-    </div>
-    <div class="flex-end">
-      <button class="btn btn-outline" onclick="closeModal()">Bekor qilish</button>
-      <button class="btn btn-primary" onclick="saveEditRule(${idx})">Saqlash</button>
-    </div>
-  `;
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function saveEditRule(idx) {
-  const name = document.getElementById('rName').value.trim();
-  const days = parseInt(document.getElementById('rDays').value);
-  if (!name || !days || days < 1) { showNotif('⚠️ Maydonlarni to\'ldiring'); return; }
-  slaRules[idx] = { name, days };
-  saveRules();
-  populateFormDropdowns();
-  renderRules();
-  closeModal();
-  showNotif('✓ Qoida yangilandi');
-}
-
-function deleteRule(idx) {
-  if (!confirm("Bu qoidani o'chirishni tasdiqlaysizmi?")) return;
-  slaRules.splice(idx, 1);
-  saveRules();
-  populateFormDropdowns();
-  renderRules();
-  showNotif("Qoida o'chirildi");
-}
-
-// ==================== ADMIN PANEL ====================
-function renderAdminPanel() {
-  const el = document.getElementById('usersTable');
-  if (!el) return;
-  el.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Ism</th>
-          <th>Username</th>
-          <th>Rol</th>
-          <th>Amallar</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${users.map(u => {
-          const roleLabel = { admin:'Egasi', manager:'Rahbar', designer:'Dizayner' }[u.role] || u.role;
-          const isSelf = u.id === currentUser.id;
-          return `
-            <tr>
-              <td>${escHtml(u.name)}</td>
-              <td style="color:var(--gray-500);font-size:12px">${escHtml(u.username)}</td>
-              <td><span class="role-badge ${u.role}">${roleLabel}</span></td>
-              <td style="white-space:nowrap">
-                <button class="btn-blue-sm" style="margin-right:6px" onclick="openEditUserModal('${u.id}')">Tahrirlash</button>
-                ${!isSelf ? `<button class="btn-danger-sm" onclick="deleteUser('${u.id}')">O'chirish</button>` : ''}
-              </td>
-            </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
-}
-
-function openAddUserModal() {
-  document.getElementById('modalTitle').textContent = "Yangi foydalanuvchi";
-  document.getElementById('modalBody').innerHTML = `
-    <div class="modal-form-group">
-      <label>Ism *</label>
-      <input type="text" id="uName" placeholder="To'liq ism">
-    </div>
-    <div class="modal-form-group">
-      <label>Username *</label>
-      <input type="text" id="uUsername" placeholder="username">
-    </div>
-    <div class="modal-form-group">
-      <label>Parol *</label>
-      <input type="password" id="uPassword" placeholder="parol">
-    </div>
-    <div class="modal-form-group">
-      <label>Rol *</label>
-      <select id="uRole">
-        <option value="admin">Egasi (Admin)</option>
-        <option value="manager">Rahbar (Manager)</option>
-        <option value="designer" selected>Dizayner</option>
-      </select>
-    </div>
-    <div class="flex-end">
-      <button class="btn btn-outline" onclick="closeModal()">Bekor qilish</button>
-      <button class="btn btn-primary" onclick="saveNewUser()">Saqlash</button>
-    </div>
-  `;
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function saveNewUser() {
-  const name     = document.getElementById('uName').value.trim();
-  const username = document.getElementById('uUsername').value.trim();
-  const password = document.getElementById('uPassword').value;
-  const role     = document.getElementById('uRole').value;
-  if (!name || !username || !password) { showNotif("⚠️ Barcha maydonlarni to'ldiring"); return; }
-  if (users.find(u => u.username === username)) { showNotif('⚠️ Bu username allaqachon mavjud'); return; }
-  users.push({ id: Date.now().toString(), name, username, password, role });
-  saveUsers();
-  renderAdminPanel();
-  closeModal();
-  showNotif("✓ Foydalanuvchi qo'shildi");
-}
-
-function openEditUserModal(uid) {
-  const user = users.find(u => u.id === uid);
-  if (!user) return;
-  const isSelf = uid === currentUser.id;
-  document.getElementById('modalTitle').textContent = "Foydalanuvchini tahrirlash";
-  document.getElementById('modalBody').innerHTML = `
-    <div class="modal-form-group">
-      <label>Ism *</label>
-      <input type="text" id="uName" value="${escHtml(user.name)}">
-    </div>
-    <div class="modal-form-group">
-      <label>Yangi parol (o'zgartirmasangiz bo'sh qoldiring)</label>
-      <input type="password" id="uPassword" placeholder="yangi parol">
-    </div>
-    ${!isSelf ? `
-    <div class="modal-form-group">
-      <label>Rol</label>
-      <select id="uRole">
-        <option value="admin" ${user.role==='admin'?'selected':''}>Egasi (Admin)</option>
-        <option value="manager" ${user.role==='manager'?'selected':''}>Rahbar (Manager)</option>
-        <option value="designer" ${user.role==='designer'?'selected':''}>Dizayner</option>
-      </select>
-    </div>` : `<p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">O'z rolini o'zgartirish mumkin emas.</p>`}
-    <div class="flex-end">
-      <button class="btn btn-outline" onclick="closeModal()">Bekor qilish</button>
-      <button class="btn btn-primary" onclick="saveEditUser('${uid}')">Saqlash</button>
-    </div>
-  `;
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function saveEditUser(uid) {
-  const user = users.find(u => u.id === uid);
-  if (!user) return;
-  const isSelf = uid === currentUser.id;
-  user.name = document.getElementById('uName').value.trim() || user.name;
-  const newPass = document.getElementById('uPassword').value;
-  if (newPass) user.password = newPass;
-  if (!isSelf) {
-    const roleEl = document.getElementById('uRole');
-    if (roleEl) user.role = roleEl.value;
-  }
-  saveUsers();
-  // Update session if editing self
-  if (isSelf) {
-    currentUser = user;
-    sessionStorage.setItem(KEY_SESSION, JSON.stringify(user));
-    document.getElementById('headerUserName').textContent = user.name;
-  }
-  renderAdminPanel();
-  closeModal();
-  showNotif('✓ Foydalanuvchi yangilandi');
-}
-
-function deleteUser(uid) {
-  if (uid === currentUser.id) { showNotif("O'zingizni o'chira olmaysiz"); return; }
-  if (!confirm("Bu foydalanuvchini o'chirishni tasdiqlaysizmi?")) return;
-  users = users.filter(u => u.id !== uid);
-  saveUsers();
-  renderAdminPanel();
-  showNotif("Foydalanuvchi o'chirildi");
-}
-
-// ==================== EXPORT ====================
-function getExportData(pageContext) {
-  let list;
-  if (pageContext === 'report') {
-    list = getSelectedMonthTasks('reportMonth');
-  } else {
-    list = getSelectedMonthTasks('tasksMonth');
-    // Apply current filters
-    const search   = (document.getElementById('fSearch')?.value || '').toLowerCase();
-    const status   = document.getElementById('fStatus')?.value || '';
-    const format   = document.getElementById('fFormat')?.value || '';
-    const division = document.getElementById('fDivision')?.value || '';
-    const dateFrom = document.getElementById('fDateFrom')?.value || '';
-    const dateTo   = document.getElementById('fDateTo')?.value || '';
-    if (search)   list = list.filter(t => t.name.toLowerCase().includes(search));
-    if (status)   list = list.filter(t => t.status === status);
-    if (format)   list = list.filter(t => t.format === format);
-    if (division) list = list.filter(t => t.division === division);
-    if (dateFrom) list = list.filter(t => t.givenDate >= dateFrom);
-    if (dateTo)   list = list.filter(t => t.givenDate <= dateTo);
-  }
-  return list;
-}
-
-function statusLabel(s) {
-  const m = { pending:"Jarayonda", done_ontime:"O'z vaqtida", done_late:"Kechikkan", revision:"Revision" };
-  return m[s] || s;
-}
-
-function exportCSV(pageContext) {
-  const list = getExportData(pageContext);
-  const headers = ['Topshiriq nomi','Format',"Bo'lim",'Berilgan sana','Deadline','Bajarilgan sana','Holat','Kechikish sababi','Izoh'];
-  const rows = list.map(t => [
-    t.name, t.format, t.division, t.givenDate, t.deadline,
-    t.doneDate||'', statusLabel(t.status), t.reason||'', t.note||''
-  ]);
-  const csvContent = [headers, ...rows]
-    .map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(','))
-    .join('\r\n');
-  // BOM for Excel
-  const bom = '﻿';
-  const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `alsahiy_topshiriqlar_${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showNotif('✓ CSV yuklab olindi');
-}
-
-function exportExcel(pageContext) {
-  if (typeof XLSX === 'undefined') { showNotif('SheetJS yuklanmadi'); return; }
-  const list = getExportData(pageContext);
-  const headers = ['Topshiriq nomi','Format',"Bo'lim",'Berilgan sana','Deadline','Bajarilgan sana','Holat','Kechikish sababi','Izoh'];
-  const rows = list.map(t => [
-    t.name, t.format, t.division, t.givenDate, t.deadline,
-    t.doneDate||'', statusLabel(t.status), t.reason||'', t.note||''
-  ]);
-  const wsData = [headers, ...rows];
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Topshiriqlar');
-  XLSX.writeFile(wb, `alsahiy_topshiriqlar_${new Date().toISOString().split('T')[0]}.xlsx`);
-  showNotif('✓ Excel yuklab olindi');
-}
-
-// ==================== NAVIGATION ====================
-function showPage(name, skipRender) {
-  const available = getAvailableTabs().map(t => t.page);
-  if (!available.includes(name)) return;
-
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-
-  const pageEl = document.getElementById(`page-${name}`);
-  if (pageEl) pageEl.classList.add('active');
-
-  document.querySelectorAll('.tab').forEach(t => {
-    if (t.dataset.page === name) t.classList.add('active');
-  });
-
-  if (!skipRender) {
-    if (name === 'tasks')     renderTasks();
-    if (name === 'mytasks')   renderMyTasks();
-    if (name === 'dashboard') renderDashboard();
-    if (name === 'report')    renderReport();
-    if (name === 'rules')     renderRules();
-    if (name === 'admin')     renderAdminPanel();
-  } else {
-    // Still need to render current page on first load
-    if (name === 'tasks')     renderTasks();
-    if (name === 'mytasks')   renderMyTasks();
-    if (name === 'dashboard') renderDashboard();
-    if (name === 'report')    renderReport();
-    if (name === 'rules')     renderRules();
-    if (name === 'admin')     renderAdminPanel();
-  }
-}
-
-// ==================== MODAL ====================
-function closeModal(e) {
-  if (e && e.target !== document.getElementById('modal')) return;
-  document.getElementById('modal').style.display = 'none';
-}
-
-// ==================== UTILS ====================
-function showNotif(msg) {
-  const el = document.getElementById('notif');
-  el.textContent = msg;
-  el.style.display = 'block';
-  setTimeout(() => { el.style.display = 'none'; }, 3000);
-}
-
-function escHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
-}
-
-// ==================== BOOTSTRAP ====================
-loadData();
-
-// Check session
-const sessionUser = sessionStorage.getItem(KEY_SESSION);
-if (sessionUser) {
-  try {
-    const su = JSON.parse(sessionUser);
-    // Re-validate user still exists
-    const found = users.find(u => u.id === su.id && u.username === su.username);
-    if (found) {
-      currentUser = found;
-      showMainApp();
+    const { data: session } = await Auth.init();
+    if (!session) {
+      App.showLoginScreen();
     }
-  } catch(e) {}
+  },
+
+  showLoginScreen() {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+  },
+
+  async showApp(profile) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    this.updateHeader(profile);
+    this.renderTabs(profile.role);
+    this.populateMonthSelects();
+    await this.populateFormatFilter();
+    this.showPage(this.getFirstTab(profile.role));
+    Tasks.subscribeToChanges(
+      () => { if (document.getElementById('page-tasks').classList.contains('active')) this.loadTasks(); },
+      (newTask) => {
+        this.showToast('Topshiriq yangilandi: ' + newTask.name, 'info');
+        if (document.getElementById('page-tasks').classList.contains('active')) this.loadTasks();
+      },
+      () => { if (document.getElementById('page-tasks').classList.contains('active')) this.loadTasks(); }
+    );
+  },
+
+  updateHeader(profile) {
+    const roleEmoji = { admin: '👑', manager: '👔', designer: '🎨', analyst: '📊' };
+    document.getElementById('userBadge').textContent = (roleEmoji[profile.role] || '') + ' ' + profile.name;
+  },
+
+  renderTabs(role) {
+    const tabs = [
+      { id: 'dashboard', label: '📊 Dashboard',            roles: ['admin','manager','designer','analyst'] },
+      { id: 'tasks',     label: '📋 Topshiriqlar',          roles: ['admin','manager'] },
+      { id: 'my-tasks',  label: '📝 Mening topshiriqlarim', roles: ['designer'] },
+      { id: 'sales',     label: '📈 Sotuv tahlili',         roles: ['admin','manager','analyst'] },
+      { id: 'reports',   label: '📄 Hisobotlar',            roles: ['admin','manager'] },
+      { id: 'sla',       label: '📐 SLA qoidalari',         roles: ['admin','manager','designer'] },
+      { id: 'admin',     label: '⚙️ Boshqaruv',            roles: ['admin'] },
+    ];
+    document.getElementById('mainTabs').innerHTML = tabs
+      .filter(t => t.roles.includes(role))
+      .map(t => '<button class="tab" data-page="' + t.id + '" onclick="App.showPage(\'' + t.id + '\')">' + t.label + '</button>')
+      .join('');
+  },
+
+  getFirstTab(role) { return 'dashboard'; },
+
+  showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const page = document.getElementById('page-' + name);
+    if (page) page.classList.add('active');
+    const tabBtn = document.querySelector('[data-page="' + name + '"]');
+    if (tabBtn) tabBtn.classList.add('active');
+    if (name === 'dashboard') this.renderDashboard();
+    if (name === 'tasks')     this.loadTasks();
+    if (name === 'my-tasks')  this.loadMyTasks();
+    if (name === 'sales')     this.loadSalesOverview();
+    if (name === 'reports')   this.renderReport();
+    if (name === 'sla')       this.loadSlaRules();
+    if (name === 'admin')     this.loadAdminPage();
+  },
+
+  // ================================================================
+  //  LOGIN / LOGOUT
+  // ================================================================
+  async handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    errEl.style.display = 'none';
+    if (!email || !password) {
+      errEl.textContent = 'Email va parolni kiriting';
+      errEl.style.display = 'block';
+      return;
+    }
+    const btn = document.querySelector('#loginScreen .btn-primary');
+    btn.textContent = 'Kirish...';
+    btn.disabled = true;
+    const { error } = await Auth.login(email, password);
+    btn.textContent = 'Kirish';
+    btn.disabled = false;
+    if (error) {
+      errEl.textContent = error.message || 'Xatolik yuz berdi';
+      errEl.style.display = 'block';
+    }
+  },
+
+  async logout() {
+    Tasks.unsubscribe();
+    await Auth.logout();
+    this.showLoginScreen();
+  },
+
+  // ================================================================
+  //  DASHBOARD
+  // ================================================================
+  async renderDashboard() {
+    const val = document.getElementById('dashMonth') && document.getElementById('dashMonth').value;
+    if (!val) return;
+    const parts = val.split('-');
+    const y = parseInt(parts[0]);
+    const m = parseInt(parts[1]);
+    document.getElementById('kpiScoreNum').textContent = '...';
+    document.getElementById('kpiGrade').textContent = '...';
+    document.getElementById('kpiScoreSub').textContent = 'Yuklanmoqda...';
+    const firstDay = new Date(y, m, 1).toISOString().split('T')[0];
+    const lastDay  = new Date(y, m + 1, 0).toISOString().split('T')[0];
+    const baseFilters = { dateFrom: firstDay, dateTo: lastDay, pageSize: 500 };
+    const filters = Auth.isDesigner()
+      ? Object.assign({}, baseFilters, { assignedTo: Auth.getUser().id })
+      : baseFilters;
+    const { data: tasks } = await Tasks.getTasks(filters);
+    if (!tasks) return;
+    const k = calcKPI(tasks);
+    const grade = getGrade(k.score);
+    document.getElementById('kpiScoreNum').textContent = k.score !== null ? k.score : '—';
+    document.getElementById('kpiGrade').textContent = grade.letter;
+    document.getElementById('kpiScoreSub').textContent =
+      k.score === null ? "Topshiriq yo'q" :
+      k.score < 60 ? '⚠️ Qizil chegara ostida!' : '✓ Normada';
+    document.getElementById('statTotal').textContent     = k.total;
+    document.getElementById('statOntime').textContent    = k.ontime;
+    document.getElementById('statOntimePct').textContent = k.total ? k.ontimePct + '%' : '—';
+    document.getElementById('statLate').textContent      = k.late;
+    document.getElementById('statLatePct').textContent   = k.total ? k.latePct + '%' : '—';
+    document.getElementById('statRevision').textContent  = k.revision;
+    document.getElementById('statRevisionPct').textContent = k.total ? k.revisionPct + '%' : '—';
+
+    const bars = [
+      { label: "O'z vaqtida bajarish", val: k.ontimePct,   cls: k.ontimePct >= 80 ? 'green' : k.ontimePct >= 60 ? 'amber' : '' },
+      { label: 'Kechikish',            val: k.latePct,     cls: '' },
+      { label: 'Qayta ishlash',        val: k.revisionPct, cls: 'amber' },
+      { label: 'Umumiy KPI',           val: k.score || 0,  cls: (k.score||0) >= 80 ? 'green' : (k.score||0) >= 60 ? 'amber' : '' },
+    ];
+    document.getElementById('kpiBars').innerHTML = bars.map(function(b) {
+      return '<div class="kpi-bar-wrap">' +
+        '<div class="kpi-bar-label">' + b.label + '</div>' +
+        '<div class="kpi-bar-track"><div class="kpi-bar-fill ' + b.cls + '" style="width:' + b.val + '%"></div></div>' +
+        '<div class="kpi-bar-val">' + b.val + '%</div>' +
+        '</div>';
+    }).join('');
+
+    const { data: slaRules } = await Tasks.getSlaRules();
+    const formatCards = (slaRules || []).map(function(f) {
+      const ft = tasks.filter(t => t.format === f.format_name);
+      if (!ft.length) return null;
+      const on   = ft.filter(t => t.status === 'done_ontime').length;
+      const late = ft.filter(t => t.status === 'done_late').length;
+      return '<div class="format-card">' +
+        '<div class="format-name">' + f.format_name + '</div>' +
+        '<div style="font-size:10px;color:var(--gray-500);margin-bottom:8px">SLA: ' + f.days_allowed + ' kun</div>' +
+        '<div class="format-stats">' +
+          '<div class="format-stat"><div class="format-stat-val red">' + ft.length + '</div><div class="format-stat-lbl">Jami</div></div>' +
+          '<div class="format-stat"><div class="format-stat-val green">' + on + '</div><div class="format-stat-lbl">O\'z vaqtida</div></div>' +
+          '<div class="format-stat"><div class="format-stat-val ' + (late > 0 ? 'amber' : 'green') + '">' + late + '</div><div class="format-stat-lbl">Kech</div></div>' +
+        '</div></div>';
+    }).filter(Boolean);
+    document.getElementById('formatCards').innerHTML = formatCards.join('') ||
+      '<p style="color:var(--gray-500);font-size:13px;grid-column:1/-1">Bu oy topshiriqlar yo\'q</p>';
+
+    this.renderTaskTable('recentTasksTable', tasks.slice(0, 8), false);
+
+    if (Auth.isAnalyst()) {
+      document.getElementById('dashSalesMini').style.display = 'block';
+      this.loadDashSalesMini();
+    }
+  },
+
+  async loadDashSalesMini() {
+    const range = getWeekRange(new Date());
+    const { data } = await Sales.getWeeklySummary(formatDateISO(range.start), formatDateISO(range.end));
+    if (!data) return;
+    document.getElementById('dashSalesContent').innerHTML =
+      '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">' +
+        '<div class="stat-card green"><div class="stat-label">Tushum</div><div class="stat-value" style="font-size:22px">' + formatMoneyShort(data.revenue) + '</div><div class="stat-sub">so\'m</div></div>' +
+        '<div class="stat-card gray"><div class="stat-label">Tranzaksiyalar</div><div class="stat-value" style="font-size:22px">' + (data.transactions||0).toLocaleString() + '</div><div class="stat-sub">Bu hafta</div></div>' +
+        '<div class="stat-card amber"><div class="stat-label">O\'rtacha chek</div><div class="stat-value" style="font-size:22px">' + formatMoneyShort(data.avgCheck||0) + '</div><div class="stat-sub">so\'m</div></div>' +
+        '<div class="stat-card red"><div class="stat-label">Miqdor</div><div class="stat-value" style="font-size:22px">' + (data.quantity||0).toLocaleString() + '</div><div class="stat-sub">dona</div></div>' +
+      '</div>';
+  },
+
+  // ================================================================
+  //  TASKS
+  // ================================================================
+  async loadTasks() {
+    const filters = {
+      search:   (document.getElementById('filterSearch')   || {}).value || '',
+      status:   (document.getElementById('filterStatus')   || {}).value || '',
+      format:   (document.getElementById('filterFormat')   || {}).value || '',
+      division: (document.getElementById('filterDivision') || {}).value || '',
+      dateFrom: (document.getElementById('filterDateFrom') || {}).value || '',
+      dateTo:   (document.getElementById('filterDateTo')   || {}).value || '',
+      page:     this._taskPage,
+      pageSize: 50,
+    };
+    document.getElementById('allTasksTable').innerHTML =
+      '<div style="padding:24px;text-align:center;color:var(--gray-500)">Yuklanmoqda...</div>';
+    const { data, count, error } = await Tasks.getTasks(filters);
+    if (error) { this.showToast('Xatolik: ' + error.message, 'error'); return; }
+    this._currentTasks = data || [];
+    document.getElementById('tasksCount').textContent = (count || 0) + ' ta topshiriq';
+    this.renderTaskTable('allTasksTable', this._currentTasks, true);
+    this.renderPagination('tasksPagination', count, this._taskPage, 50, (p) => { this._taskPage = p; this.loadTasks(); });
+  },
+
+  applyFilters() { this._taskPage = 1; this.loadTasks(); },
+
+  clearFilters() {
+    ['filterSearch','filterDateFrom','filterDateTo'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.value = '';
+    });
+    ['filterStatus','filterFormat','filterDivision'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.value = '';
+    });
+    this.applyFilters();
+  },
+
+  renderTaskTable(containerId, list, showActions) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!list || !list.length) {
+      el.innerHTML = '<div class="empty-state"><div class="big">📭</div><p>Topshiriqlar yo\'q</p></div>';
+      return;
+    }
+    const isDesigner = Auth.isDesigner();
+    const isAdmin    = Auth.isAdmin();
+    let rows = '';
+    for (let i = 0; i < list.length; i++) {
+      const t = list[i];
+      const overdue = isOverdue(t.deadline) && t.status === 'pending';
+      let actionCell = '';
+      if (showActions) {
+        let btns = '';
+        if (isDesigner) {
+          btns = '<button class="btn-danger-sm" onclick="App.showStatusModal(\'' + t.id + '\',\'' + t.status + '\')">Holat</button>';
+        } else {
+          btns = '<button class="btn-danger-sm" style="background:var(--red-light);color:var(--red-dark)" onclick="App.showEditTask(\'' + t.id + '\')">✏</button>';
+          if (isAdmin) btns += '<button class="btn-danger-sm" onclick="App.deleteTask(\'' + t.id + '\')">✕</button>';
+        }
+        actionCell = '<td onclick="event.stopPropagation()" style="white-space:nowrap">' + btns + '</td>';
+      }
+      rows += '<tr style="cursor:pointer" onclick="App.openDrawer(\'' + t.id + '\')">' +
+        '<td><strong>' + (t.name||'') + '</strong>' +
+          (t.note ? '<div style="font-size:11px;color:var(--gray-500)">' + t.note + '</div>' : '') +
+          ((t.task_comments && t.task_comments.length) ? '<div style="font-size:11px;color:var(--gray-500)">💬 ' + t.task_comments.length + ' izoh</div>' : '') +
+        '</td>' +
+        '<td><span class="badge-format">' + (t.format||'') + '</span></td>' +
+        '<td style="font-size:12px;color:var(--gray-500)">' + (t.division||'—') + '</td>' +
+        '<td style="font-size:12px">' + formatDate(t.given_date) + '</td>' +
+        '<td style="font-size:12px;' + (overdue ? 'color:var(--red);font-weight:600' : '') + '">' + formatDate(t.deadline) + '</td>' +
+        '<td>' + this.statusBadge(t.status) + '</td>' +
+        actionCell +
+        '</tr>';
+    }
+    el.innerHTML = '<table><thead><tr>' +
+      '<th>Topshiriq</th><th>Format</th><th>Bo\'lim</th>' +
+      '<th>Berilgan</th><th>Deadline</th><th>Holat</th>' +
+      (showActions ? '<th></th>' : '') +
+      '</tr></thead><tbody>' + rows + '</tbody></table>';
+  },
+
+  statusBadge(status) {
+    const m = { pending: 'badge-pending', done_ontime: 'badge-ok', done_late: 'badge-late', revision: 'badge-pending' };
+    const l = { pending: 'Jarayonda', done_ontime: "✓ O'z vaqtida", done_late: '⚠ Kechikkan', revision: '↩ Revision' };
+    return '<span class="badge ' + (m[status]||'') + '">' + (l[status]||status) + '</span>';
+  },
+
+  // ================================================================
+  //  MY TASKS
+  // ================================================================
+  async loadMyTasks() {
+    const userId = Auth.getUser() && Auth.getUser().id;
+    if (!userId) return;
+    document.getElementById('myTasksTable').innerHTML =
+      '<div style="padding:24px;text-align:center">Yuklanmoqda...</div>';
+    const { data, count } = await Tasks.getMyTasks(userId);
+    document.getElementById('myTasksCount').textContent = (count||0) + ' ta';
+    this.renderTaskTable('myTasksTable', data, true);
+  },
+
+  // ================================================================
+  //  TASK DRAWER
+  // ================================================================
+  async openDrawer(taskId) {
+    const drawerEl  = document.getElementById('taskDrawer');
+    const overlayEl = document.getElementById('drawerOverlay');
+    document.getElementById('drawerBody').innerHTML =
+      '<div style="padding:24px;text-align:center">Yuklanmoqda...</div>';
+    drawerEl.classList.add('open');
+    overlayEl.classList.add('open');
+    const { data: task } = await Tasks.getTaskById(taskId);
+    if (!task) return;
+    document.getElementById('drawerTitle').textContent = task.name;
+    const comments = task.task_comments || [];
+    const overdue = isOverdue(task.deadline) && task.status === 'pending';
+
+    let commentHtml = '';
+    if (comments.length) {
+      comments.forEach(function(c) {
+        const initial = ((c.user && c.user.name) || '?')[0].toUpperCase();
+        commentHtml += '<div style="display:flex;gap:10px;margin-bottom:12px">' +
+          '<div style="width:32px;height:32px;border-radius:50%;background:var(--red-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">' + initial + '</div>' +
+          '<div>' +
+            '<div style="font-size:12px;font-weight:600">' + ((c.user && c.user.name) || '—') + ' <span style="font-weight:400;color:var(--gray-500)">' + formatDate(c.created_at) + '</span></div>' +
+            '<div style="font-size:13px;margin-top:2px">' + c.text + '</div>' +
+          '</div></div>';
+      });
+    } else {
+      commentHtml = '<div style="color:var(--gray-500);font-size:13px">Izoh yo\'q</div>';
+    }
+
+    document.getElementById('drawerBody').innerHTML =
+      '<div style="margin-bottom:20px">' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">' +
+          '<div><div class="stat-label">Format</div><div style="font-weight:600;margin-top:4px">' + task.format + '</div></div>' +
+          '<div><div class="stat-label">Bo\'lim</div><div style="font-weight:600;margin-top:4px">' + (task.division||'—') + '</div></div>' +
+          '<div><div class="stat-label">Berilgan sana</div><div style="margin-top:4px">' + formatDate(task.given_date) + '</div></div>' +
+          '<div><div class="stat-label">Deadline</div><div style="margin-top:4px;' + (overdue ? 'color:var(--red);font-weight:600' : '') + '">' + formatDate(task.deadline) + '</div></div>' +
+          '<div><div class="stat-label">Holat</div><div style="margin-top:4px">' + this.statusBadge(task.status) + '</div></div>' +
+          '<div><div class="stat-label">Bajaruvchi</div><div style="margin-top:4px">' + ((task.assigned_profile && task.assigned_profile.name) || '—') + '</div></div>' +
+        '</div>' +
+        (task.reason ? '<div style="background:var(--amber-light);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;margin-bottom:12px">⚠️ ' + task.reason + '</div>' : '') +
+        (task.note   ? '<div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;margin-bottom:12px">' + task.note + '</div>' : '') +
+      '</div>' +
+      '<div style="border-top:1px solid var(--gray-200);padding-top:16px">' +
+        '<div class="section-title" style="margin-bottom:12px">Izohlar (' + comments.length + ')</div>' +
+        '<div id="commentsList">' + commentHtml + '</div>' +
+        '<div style="margin-top:16px;display:flex;gap:8px">' +
+          '<input type="text" id="newComment" placeholder="Izoh yozing..." style="flex:1">' +
+          '<button class="btn btn-primary btn-sm" onclick="App.submitComment(\'' + taskId + '\')">Yuborish</button>' +
+        '</div>' +
+      '</div>';
+
+    const footerBtns = [];
+    if (Auth.isDesigner()) {
+      footerBtns.push('<button class="btn btn-primary" onclick="App.showStatusModal(\'' + taskId + '\',\'' + task.status + '\')">Holat o\'zgartirish</button>');
+    } else {
+      footerBtns.push('<button class="btn btn-primary" onclick="App.showEditTask(\'' + taskId + '\')">✏ Tahrirlash</button>');
+      if (Auth.isAdmin()) footerBtns.push('<button class="btn btn-outline" style="color:var(--red);border-color:var(--red)" onclick="App.deleteTask(\'' + taskId + '\')">O\'chirish</button>');
+    }
+    footerBtns.push('<button class="btn btn-outline" onclick="App.closeDrawer()">Yopish</button>');
+    document.getElementById('drawerFooter').innerHTML = footerBtns.join('');
+  },
+
+  closeDrawer() {
+    document.getElementById('taskDrawer').classList.remove('open');
+    document.getElementById('drawerOverlay').classList.remove('open');
+  },
+
+  async submitComment(taskId) {
+    const input = document.getElementById('newComment');
+    const text  = input && input.value && input.value.trim();
+    if (!text) return;
+    const { error } = await Tasks.addComment(taskId, text);
+    if (error) { this.showToast('Xatolik: ' + error.message, 'error'); return; }
+    input.value = '';
+    this.openDrawer(taskId);
+  },
+
+  // ================================================================
+  //  ADD / EDIT TASK
+  // ================================================================
+  async showAddTask() {
+    const { data: slaRules } = await Tasks.getSlaRules();
+    const formatOptions = (slaRules||[]).map(f => '<option value="' + f.format_name + '">' + f.format_name + '</option>').join('');
+    document.getElementById('modalTitle').textContent = 'Yangi topshiriq';
+    document.getElementById('modalBody').innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+        '<div class="form-group form-group-full"><label>Topshiriq nomi *</label><input type="text" id="mt_name" placeholder="Masalan: Ramazon aksiya banneri"></div>' +
+        '<div class="form-group"><label>Format *</label><select id="mt_format"><option value="">— tanlang —</option>' + formatOptions + '</select></div>' +
+        '<div class="form-group"><label>Bo\'lim</label><select id="mt_division">' +
+          '<option value="Umumiy">Umumiy</option><option value="Apteka">Apteka</option>' +
+          '<option value="Kanstovar">Kanstovar</option><option value="Xoztovar">Xoztovar</option>' +
+          '<option value="Non markazi">Non markazi</option><option value="Texnomir">Texnomir</option>' +
+          '<option value="Paynet">Paynet</option><option value="Al-Sahiy 1-qavat">Al-Sahiy 1-qavat</option>' +
+          '<option value="Al-Sahiy 2-qavat">Al-Sahiy 2-qavat</option>' +
+        '</select></div>' +
+        '<div class="form-group"><label>Berilgan sana *</label><input type="date" id="mt_given" value="' + new Date().toISOString().split('T')[0] + '"></div>' +
+        '<div class="form-group"><label>Deadline *</label><input type="date" id="mt_deadline"></div>' +
+        '<div class="form-group"><label>Bajarilgan sana</label><input type="date" id="mt_done"></div>' +
+        '<div class="form-group"><label>Holat</label><select id="mt_status">' +
+          '<option value="pending">Jarayonda</option>' +
+          '<option value="done_ontime">O\'z vaqtida bajarildi</option>' +
+          '<option value="done_late">Kech bajarildi</option>' +
+          '<option value="revision">Qayta ishlash</option>' +
+        '</select></div>' +
+        '<div class="form-group form-group-full"><label>Kechikish sababi</label><input type="text" id="mt_reason" placeholder="Masalan: Kontent kech berildi"></div>' +
+        '<div class="form-group form-group-full"><label>Izoh</label><input type="text" id="mt_note"></div>' +
+      '</div>' +
+      '<div class="flex-end" style="margin-top:16px">' +
+        '<button class="btn btn-outline" onclick="App.closeModal()">Bekor qilish</button>' +
+        '<button class="btn btn-primary" onclick="App.saveTask()">✓ Saqlash</button>' +
+      '</div>';
+    document.getElementById('modal').style.display = 'flex';
+  },
+
+  async saveTask(editId) {
+    editId = editId || null;
+    const name     = document.getElementById('mt_name')     && document.getElementById('mt_name').value.trim();
+    const format   = document.getElementById('mt_format')   && document.getElementById('mt_format').value;
+    const given    = document.getElementById('mt_given')    && document.getElementById('mt_given').value;
+    const deadline = document.getElementById('mt_deadline') && document.getElementById('mt_deadline').value;
+    if (!name || !format || !given || !deadline) {
+      this.showToast("Majburiy maydonlarni to'ldiring", 'warning'); return;
+    }
+    const taskData = {
+      name, format,
+      division:   document.getElementById('mt_division').value,
+      given_date: given,
+      deadline,
+      done_date:  document.getElementById('mt_done').value || null,
+      status:     document.getElementById('mt_status').value || 'pending',
+      reason:     (document.getElementById('mt_reason').value || '').trim() || null,
+      note:       (document.getElementById('mt_note').value   || '').trim() || null,
+    };
+    const { error } = editId
+      ? await Tasks.updateTask(editId, taskData)
+      : await Tasks.createTask(taskData);
+    if (error) { this.showToast('Xatolik: ' + error.message, 'error'); return; }
+    this.closeModal();
+    this.showToast(editId ? 'Topshiriq yangilandi' : 'Topshiriq saqlandi!', 'success');
+    this.loadTasks();
+  },
+
+  async showEditTask(taskId) {
+    const { data: task } = await Tasks.getTaskById(taskId);
+    if (!task) return;
+    await this.showAddTask();
+    document.getElementById('modalTitle').textContent = 'Topshiriqni tahrirlash';
+    document.getElementById('mt_name').value     = task.name;
+    document.getElementById('mt_format').value   = task.format;
+    document.getElementById('mt_division').value = task.division || 'Umumiy';
+    document.getElementById('mt_given').value    = task.given_date;
+    document.getElementById('mt_deadline').value = task.deadline;
+    document.getElementById('mt_done').value     = task.done_date || '';
+    document.getElementById('mt_status').value   = task.status;
+    document.getElementById('mt_reason').value   = task.reason || '';
+    document.getElementById('mt_note').value     = task.note   || '';
+    const self = this;
+    document.querySelector('#modalBody .btn-primary').onclick = function() { self.saveTask(taskId); };
+  },
+
+  async deleteTask(taskId) {
+    if (!confirm("Topshiriqni o'chirishni tasdiqlaysizmi?")) return;
+    const { error } = await Tasks.deleteTask(taskId);
+    if (error) { this.showToast('Xatolik: ' + error.message, 'error'); return; }
+    this.closeDrawer();
+    this.showToast("Topshiriq o'chirildi");
+    this.loadTasks();
+  },
+
+  // ================================================================
+  //  STATUS CHANGE MODAL
+  // ================================================================
+  showStatusModal(taskId, currentStatus) {
+    document.getElementById('modalTitle').textContent = "Holatni o'zgartirish";
+    document.getElementById('modalBody').innerHTML =
+      '<div class="form-group" style="margin-bottom:12px"><label>Yangi holat</label>' +
+        '<select id="newStatus">' +
+          '<option value="pending"     ' + (currentStatus==='pending'    ?'selected':'') + '>Jarayonda</option>' +
+          '<option value="done_ontime" ' + (currentStatus==='done_ontime'?'selected':'') + ">O'z vaqtida bajarildi</option>" +
+          '<option value="done_late"   ' + (currentStatus==='done_late'  ?'selected':'') + '>Kech bajarildi</option>' +
+          '<option value="revision"    ' + (currentStatus==='revision'   ?'selected':'') + '>Qayta ishlash</option>' +
+        '</select></div>' +
+      '<div class="form-group" style="margin-bottom:16px"><label>Izoh (ixtiyoriy)</label>' +
+        '<textarea id="statusComment" rows="3" placeholder="Holat haqida izoh..."></textarea></div>' +
+      '<div class="flex-end">' +
+        '<button class="btn btn-outline" onclick="App.closeModal()">Bekor qilish</button>' +
+        '<button class="btn btn-primary" onclick="App.saveStatus(\'' + taskId + '\')">✓ Saqlash</button>' +
+      '</div>';
+    document.getElementById('modal').style.display = 'flex';
+  },
+
+  async saveStatus(taskId) {
+    const status  = document.getElementById('newStatus').value;
+    const comment = document.getElementById('statusComment') && document.getElementById('statusComment').value.trim();
+    const doneDate = (status === 'done_ontime' || status === 'done_late')
+      ? new Date().toISOString().split('T')[0] : null;
+    const { error } = await Tasks.updateTaskStatus(taskId, status, doneDate);
+    if (error) { this.showToast('Xatolik: ' + error.message, 'error'); return; }
+    if (comment) await Tasks.addComment(taskId, comment);
+    this.closeModal();
+    this.closeDrawer();
+    this.showToast('Holat yangilandi!', 'success');
+    if (Auth.isDesigner()) this.loadMyTasks(); else this.loadTasks();
+  },
+
+  // ================================================================
+  //  SALES
+  // ================================================================
+  async loadSalesOverview() {
+    const { data: weeks } = await Sales.getAvailableWeeks();
+    const weekSelect = document.getElementById('salesWeekSelect');
+    if (weekSelect && weeks && weeks.length) {
+      weekSelect.innerHTML = '<option value="">Haftani tanlang...</option>' +
+        weeks.map(w => '<option value="' + w.week_start + '">' + getWeekLabel(w.week_start) + '</option>').join('');
+      if (!Sales.getState().weekStart) {
+        const latest = weeks[0];
+        Sales.setState({ weekStart: latest.week_start, weekEnd: latest.week_end });
+        weekSelect.value = latest.week_start;
+      }
+    }
+    await this.refreshSalesOverview();
+  },
+
+  async refreshSalesOverview() {
+    const state = Sales.getState();
+    const weekStart = state.weekStart;
+    const weekEnd   = state.weekEnd;
+    const compareMode = state.compareMode || 'yoy';
+    if (!weekStart) return;
+
+    const { data: summary } = await Sales.getWeeklySummary(weekStart, weekEnd);
+    if (summary) {
+      const prevVal = compareMode === 'wow' ? summary.revenuePrevWeek : summary.revenuePrevYear;
+      const trend   = Sales.calcTrend(summary.revenue, prevVal);
+      const metricCards = [
+        { label: 'Tushum',         val: formatMoney(summary.revenue||0),             unit: "so'm", trend: trend },
+        { label: 'Tranzaksiyalar', val: (summary.transactions||0).toLocaleString(),   unit: '', trend: null },
+        { label: "O'rtacha chek",  val: formatMoney(summary.avgCheck||0),            unit: "so'm", trend: null },
+        { label: 'Miqdor',         val: (summary.quantity||0).toLocaleString(),       unit: 'dona', trend: null },
+      ];
+      document.getElementById('salesKpiCards').innerHTML = metricCards.map(function(c) {
+        const trendBadge = c.trend !== null
+          ? ' <span class="trend-badge ' + (c.trend >= 0 ? 'up' : 'down') + '">' + (c.trend >= 0 ? '▲' : '▼') + ' ' + Math.abs(c.trend) + '%</span>'
+          : '';
+        return '<div class="metric-card">' +
+          '<div class="metric-label">' + c.label + '</div>' +
+          '<div class="metric-value">' + c.val + '</div>' +
+          '<div style="font-size:12px;color:var(--gray-500)">' + c.unit + trendBadge + '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    const { data: trendData } = await Sales.getWeeklyTrend(8);
+    if (trendData && trendData.length) {
+      Charts.renderRevenueChart('revenueChart', {
+        labels: trendData.map(w => w.weekLabel),
+        datasets: [
+          { label: 'Bu yil',     data: trendData.map(w => w.revenue),         color: '#C92C35' },
+          { label: "O'tgan yil", data: trendData.map(w => w.revenuePrevYear), color: '#888888' },
+        ]
+      });
+    }
+
+    const { data: divs } = await Sales.getDivisionBreakdown(weekStart, weekEnd);
+    if (divs && divs.length) {
+      const maxRev = divs[0].revenue || 1;
+      document.getElementById('divisionBarsOverview').innerHTML = divs.map(function(d) {
+        const trendVal = Sales.calcTrend(d.revenue, d.revenuePrevWeek);
+        const pct = Math.round((d.revenue / maxRev) * 100);
+        return '<div class="kpi-bar-wrap" style="cursor:pointer" onclick="App.goToDivision(\'' + d.division + '\')">' +
+          '<div class="kpi-bar-label" style="width:160px">' + d.division + '</div>' +
+          '<div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:' + pct + '%"></div></div>' +
+          '<div style="width:120px;text-align:right;font-size:12px;font-weight:600">' + formatMoneyShort(d.revenue) + '</div>' +
+          (trendVal !== null ? '<span class="trend-badge ' + (trendVal >= 0 ? 'up' : 'down') + '" style="margin-left:8px">' + (trendVal >= 0 ? '▲' : '▼') + Math.abs(trendVal) + '%</span>' : '') +
+          '</div>';
+      }).join('');
+    }
+  },
+
+  showSalesSubTab(name) {
+    document.querySelectorAll('.sales-subtab').forEach(function(el) { el.style.display = 'none'; });
+    document.querySelectorAll('#page-sales .sub-tab').forEach(function(el) { el.classList.remove('active'); });
+    const sub = document.getElementById('sales-' + name);
+    if (sub) sub.style.display = 'block';
+    const btn = document.querySelector('#page-sales .sub-tab[onclick*="' + name + '"]');
+    if (btn) btn.classList.add('active');
+    this._activeSalesSubTab = name;
+    if (name === 'divisions') this.loadDivisionsTable();
+    if (name === 'products')  this.loadTopProducts();
+  },
+
+  async loadDivisionsTable() {
+    const state = Sales.getState();
+    const { data } = await Sales.getDivisionBreakdown(state.weekStart, state.weekEnd);
+    if (!data) return;
+    const trendBadge = function(v) {
+      return v === null ? '—' : '<span class="trend-badge ' + (v>=0?'up':'down') + '">' + (v>=0?'▲':'▼') + Math.abs(v) + '%</span>';
+    };
+    document.getElementById('divisionsTable').innerHTML = '<table>' +
+      '<thead><tr><th>Bo\'lim</th><th>Tushum</th><th>WoW</th><th>YoY</th><th>Tranzaksiyalar</th><th>O\'rtacha chek</th><th>Miqdor</th></tr></thead>' +
+      '<tbody>' + data.map(function(d) {
+        return '<tr>' +
+          '<td><strong>' + d.division + '</strong></td>' +
+          '<td style="font-weight:600">' + formatMoney(d.revenue) + '</td>' +
+          '<td>' + trendBadge(Sales.calcTrend(d.revenue, d.revenuePrevWeek)) + '</td>' +
+          '<td>' + trendBadge(Sales.calcTrend(d.revenue, d.revenuePrevYear)) + '</td>' +
+          '<td>' + (d.transactions||0).toLocaleString() + '</td>' +
+          '<td>' + formatMoney(d.avgCheck||0) + '</td>' +
+          '<td>' + (d.quantity||0).toLocaleString() + '</td>' +
+          '</tr>';
+      }).join('') + '</tbody></table>';
+  },
+
+  async loadTopProducts() {
+    const state = Sales.getState();
+    const filters = {
+      weekStart: state.weekStart,
+      weekEnd:   state.weekEnd,
+      search:    (document.getElementById('productSearch')  || {}).value || '',
+      division:  (document.getElementById('productDivision')|| {}).value || '',
+      sortBy:    (document.getElementById('productSort')    || {}).value || 'revenue',
+      page:      this._productPage,
+      pageSize:  25,
+    };
+    const { data, count } = await Sales.getTopProducts(filters);
+    if (!data) return;
+    const page = this._productPage;
+    document.getElementById('productsTable').innerHTML = '<table>' +
+      '<thead><tr><th>#</th><th>Mahsulot</th><th>Bo\'lim</th><th>Kategoriya</th><th>Tushum</th><th>Miqdor</th><th>O\'rt. narx</th><th>WoW</th></tr></thead>' +
+      '<tbody>' + data.map(function(p, i) {
+        const wow = Sales.calcTrend(p.revenue, p.revenue_prev_week);
+        return '<tr>' +
+          '<td style="color:var(--gray-500)">' + ((page-1)*25+i+1) + '</td>' +
+          '<td><strong>' + (p.product_name||'—') + '</strong>' + (p.sku ? '<div style="font-size:11px;color:var(--gray-500)">' + p.sku + '</div>' : '') + '</td>' +
+          '<td style="font-size:12px">' + (p.division||'—') + '</td>' +
+          '<td style="font-size:12px;color:var(--gray-500)">' + (p.category||'—') + '</td>' +
+          '<td style="font-weight:600">' + formatMoney(p.revenue) + '</td>' +
+          '<td>' + (p.quantity_sold||0).toLocaleString() + '</td>' +
+          '<td>' + formatMoney(p.avg_check||0) + '</td>' +
+          '<td>' + (wow !== null ? '<span class="trend-badge ' + (wow>=0?'up':'down') + '">' + (wow>=0?'▲':'▼') + Math.abs(wow) + '%</span>' : '—') + '</td>' +
+          '</tr>';
+      }).join('') + '</tbody></table>';
+    this.renderPagination('productsPagination', count, this._productPage, 25, (p) => {
+      this._productPage = p; this.loadTopProducts();
+    });
+  },
+
+  setSalesPeriod(period, event) {
+    document.querySelectorAll('#salesPeriodPicker .period-btn').forEach(function(b) {
+      if (!b.id || b.id.indexOf('cmp') !== 0) b.classList.remove('active');
+    });
+    if (event && event.target) event.target.classList.add('active');
+    const today = new Date();
+    let start, end;
+    if (period === 'this') {
+      const r = getWeekRange(today); start = r.start; end = r.end;
+    } else if (period === 'last') {
+      const r = getWeekRange(new Date(today - 7 * 86400000)); start = r.start; end = r.end;
+    } else if (period === '4weeks') {
+      end   = getWeekRange(today).end;
+      start = new Date(end - 27 * 86400000);
+    }
+    Sales.setState({ weekStart: formatDateISO(start), weekEnd: formatDateISO(end) });
+    this.refreshSalesOverview();
+  },
+
+  onSalesWeekChange() {
+    const val = document.getElementById('salesWeekSelect').value;
+    if (!val) return;
+    Sales.setState({ weekStart: val });
+    this.refreshSalesOverview();
+  },
+
+  setCompareMode(mode) {
+    Sales.setState({ compareMode: mode });
+    document.getElementById('cmpWow').classList.toggle('active', mode === 'wow');
+    document.getElementById('cmpYoy').classList.toggle('active', mode === 'yoy');
+    this.refreshSalesOverview();
+  },
+
+  goToDivision(division) {
+    const self = this;
+    this.showPage('sales');
+    setTimeout(function() {
+      self.showSalesSubTab('divisions');
+      const el = document.getElementById('productDivision');
+      if (el) el.value = division;
+    }, 100);
+  },
+
+  exportSalesExcel() {
+    const state = Sales.getState();
+    Sales.getDivisionBreakdown(state.weekStart, state.weekEnd)
+      .then(function(res) { if (res.data) Exporter.exportSalesExcel(res.data, 'savdo_' + state.weekStart + '.xlsx'); });
+  },
+
+  exportProductsExcel() {
+    const state = Sales.getState();
+    Sales.getTopProducts({ weekStart: state.weekStart, weekEnd: state.weekEnd, pageSize: 500 })
+      .then(function(res) { if (res.data) Exporter.exportSalesExcel(res.data, 'top_mahsulotlar_' + state.weekStart + '.xlsx'); });
+  },
+
+  // ================================================================
+  //  REPORTS
+  // ================================================================
+  async renderReport() {
+    const val = document.getElementById('reportMonth') && document.getElementById('reportMonth').value;
+    if (!val) return;
+    const parts = val.split('-');
+    const y = parseInt(parts[0]);
+    const m = parseInt(parts[1]);
+    const MONTHS_UZ = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+    const monthName = MONTHS_UZ[m] + ' ' + y;
+    const firstDay  = new Date(y, m, 1).toISOString().split('T')[0];
+    const lastDay   = new Date(y, m + 1, 0).toISOString().split('T')[0];
+    const { data: tasks } = await Tasks.getTasks({ dateFrom: firstDay, dateTo: lastDay, pageSize: 500 });
+    const k = calcKPI(tasks || []);
+    const grade = getGrade(k.score);
+    const { data: slaRules } = await Tasks.getSlaRules();
+    const fBreakdown = (slaRules||[]).map(function(f) {
+      const fl = (tasks||[]).filter(t => t.format === f.format_name);
+      if (!fl.length) return null;
+      const on   = fl.filter(t => t.status === 'done_ontime').length;
+      const late = fl.filter(t => t.status === 'done_late').length;
+      const rev  = fl.filter(t => t.status === 'revision').length;
+      return { name: f.format_name, total: fl.length, ontime: on, late: late, rev: rev, pct: Math.round((on/fl.length)*100) };
+    }).filter(Boolean);
+
+    let verdictHtml = '';
+    if (k.score === null) {
+      verdictHtml = '<div class="verdict-box warn"><div class="verdict-icon">📭</div><div class="verdict-text warn">Topshiriq yo\'q</div></div>';
+    } else if (k.score >= 80) {
+      verdictHtml = '<div class="verdict-box good"><div class="verdict-icon">🏆</div><div class="verdict-text good">Ajoyib natija!</div></div>';
+    } else if (k.score >= 60) {
+      verdictHtml = '<div class="verdict-box warn"><div class="verdict-icon">⚠️</div><div class="verdict-text warn">Qoniqarli natija</div></div>';
+    } else {
+      verdictHtml = '<div class="verdict-box bad"><div class="verdict-icon">🔴</div><div class="verdict-text bad">KPI qizil chegara ostida! (' + k.score + ' &lt; 60)</div></div>';
+    }
+
+    const tableHtml = fBreakdown.length
+      ? '<div class="section-title">Format bo\'yicha tahlil</div>' +
+        '<table style="margin-top:12px"><thead><tr><th>Format</th><th>Jami</th><th>O\'z vaqtida</th><th>Kechikkan</th><th>Revision</th><th>%</th></tr></thead>' +
+        '<tbody>' + fBreakdown.map(function(f) {
+          return '<tr><td><span class="badge-format">' + f.name + '</span></td><td>' + f.total + '</td>' +
+            '<td style="color:#218F6D;font-weight:600">' + f.ontime + '</td>' +
+            '<td style="color:' + (f.late>0?'var(--red)':'inherit') + '">' + f.late + '</td>' +
+            '<td>' + f.rev + '</td><td style="font-weight:600">' + f.pct + '%</td></tr>';
+        }).join('') + '</tbody></table>'
+      : '';
+
+    document.getElementById('reportContent').innerHTML =
+      '<div class="report-card">' +
+        '<div class="report-header">' +
+          '<div><div class="report-logo">al-sahíy</div><div style="font-size:13px;color:var(--gray-500)">Grafik dizayner oylik SLA hisoboti</div></div>' +
+          '<div style="text-align:right"><div style="font-size:22px;font-weight:700;color:var(--red)">' + monthName + '</div>' +
+          '<div class="report-period">Hisobot: ' + new Date().toLocaleDateString('uz') + '</div></div>' +
+        '</div>' +
+        verdictHtml +
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">' +
+          '<div style="text-align:center;padding:16px;background:var(--gray-50);border-radius:var(--radius-sm)"><div style="font-size:32px;font-weight:700;color:var(--red)">' + k.total + '</div><div style="font-size:12px;color:var(--gray-500)">Jami topshiriq</div></div>' +
+          '<div style="text-align:center;padding:16px;background:var(--green-light);border-radius:var(--radius-sm)"><div style="font-size:32px;font-weight:700;color:#218F6D">' + k.ontimePct + '%</div><div style="font-size:12px;color:#218F6D">O\'z vaqtida</div></div>' +
+          '<div style="text-align:center;padding:16px;background:' + (k.score<60?'var(--danger-light)':'var(--gray-50)') + ';border-radius:var(--radius-sm)"><div style="font-size:32px;font-weight:700;color:' + grade.color + '">' + (k.score!==null?k.score:'—') + '</div><div style="font-size:12px;color:var(--gray-500)">KPI ball</div></div>' +
+        '</div>' +
+        tableHtml +
+        '<div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-500);display:flex;justify-content:space-between">' +
+          '<span>Al-Sahiy Supermarket — Marketing bo\'limi</span>' +
+          '<span>Mas\'ul: Fazliddin (CMO)</span>' +
+        '</div>' +
+      '</div>';
+  },
+
+  exportReportExcel() {
+    const val = document.getElementById('reportMonth') && document.getElementById('reportMonth').value;
+    if (!val) return;
+    const parts = val.split('-');
+    const y = parseInt(parts[0]); const m = parseInt(parts[1]);
+    const firstDay = new Date(y, m, 1).toISOString().split('T')[0];
+    const lastDay  = new Date(y, m + 1, 0).toISOString().split('T')[0];
+    Tasks.getTasks({ dateFrom: firstDay, dateTo: lastDay, pageSize: 500 })
+      .then(function(res) { if (res.data) Exporter.exportTasksExcel(res.data, 'hisobot_' + val + '.xlsx'); });
+  },
+
+  exportTasksCSV()   { Exporter.exportTasksCSV(this._currentTasks, 'topshiriqlar.csv'); },
+  exportTasksExcel() { Exporter.exportTasksExcel(this._currentTasks, 'topshiriqlar.xlsx'); },
+
+  // ================================================================
+  //  SLA RULES
+  // ================================================================
+  async loadSlaRules() {
+    const { data: rules } = await Tasks.getSlaRules();
+    const isAdmin = Auth.isAdmin();
+    const el = document.getElementById('slaRulesContent');
+    if (isAdmin) {
+      el.innerHTML = '<div class="table-section">' +
+        '<div class="table-header"><div class="section-title">SLA qoidalari</div>' +
+        '<button class="btn btn-primary btn-sm" onclick="App.showAddSlaRule()">+ Qo\'shish</button></div>' +
+        '<table><thead><tr><th>Format</th><th>Muddat (kun)</th><th>Tavsif</th><th></th></tr></thead>' +
+        '<tbody>' + (rules||[]).map(function(r) {
+          return '<tr>' +
+            '<td><strong>' + r.format_name + '</strong></td>' +
+            '<td><span class="rule-deadline">' + r.days_allowed + ' kun</span></td>' +
+            '<td style="color:var(--gray-500);font-size:12px">' + (r.description||'—') + '</td>' +
+            '<td style="white-space:nowrap">' +
+              '<button class="btn-danger-sm" style="background:var(--red-light);color:var(--red-dark)" ' +
+                'onclick="App.showEditSlaRule(\'' + r.id + '\',\'' + r.format_name.replace(/'/g,'&#39;') + '\',' + r.days_allowed + ',\'' + (r.description||'').replace(/'/g,'&#39;') + '\')">✏</button> ' +
+              '<button class="btn-danger-sm" onclick="App.deleteSlaRule(\'' + r.id + '\')">✕</button>' +
+            '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    } else {
+      el.innerHTML = '<div class="rules-grid">' + (rules||[]).map(function(r) {
+        return '<div class="rule-card">' +
+          '<div class="rule-icon">📋</div>' +
+          '<div><div class="rule-title">' + r.format_name + '</div>' +
+          '<div class="rule-desc">' + (r.description||'Standart muddat. Kechikish imtiyozsiz.') + '</div>' +
+          '<div class="rule-deadline">⏱ ' + r.days_allowed + ' ish kuni</div></div>' +
+          '</div>';
+      }).join('') + '</div>';
+    }
+  },
+
+  showAddSlaRule() {
+    document.getElementById('modalTitle').textContent = 'Yangi SLA qoida';
+    document.getElementById('modalBody').innerHTML =
+      '<div class="form-group" style="margin-bottom:12px"><label>Format nomi *</label><input type="text" id="sla_name" placeholder="Masalan: Animatsiya"></div>' +
+      '<div class="form-group" style="margin-bottom:12px"><label>Muddat (ish kuni) *</label><input type="number" id="sla_days" min="1" max="30" value="1"></div>' +
+      '<div class="form-group" style="margin-bottom:16px"><label>Tavsif</label><input type="text" id="sla_desc" placeholder="Ixtiyoriy tavsif"></div>' +
+      '<div class="flex-end">' +
+        '<button class="btn btn-outline" onclick="App.closeModal()">Bekor qilish</button>' +
+        '<button class="btn btn-primary" onclick="App.saveSlaRule()">✓ Saqlash</button>' +
+      '</div>';
+    document.getElementById('modal').style.display = 'flex';
+  },
+
+  showEditSlaRule(id, name, days, desc) {
+    this.showAddSlaRule();
+    document.getElementById('modalTitle').textContent = 'SLA qoidani tahrirlash';
+    document.getElementById('sla_name').value = name;
+    document.getElementById('sla_days').value = days;
+    document.getElementById('sla_desc').value = desc;
+    const self = this;
+    document.querySelector('#modalBody .btn-primary').onclick = function() { self.saveSlaRule(id); };
+  },
+
+  async saveSlaRule(editId) {
+    editId = editId || null;
+    const name = document.getElementById('sla_name').value.trim();
+    const days = parseInt(document.getElementById('sla_days').value);
+    const desc = document.getElementById('sla_desc').value.trim();
+    if (!name || !days) { this.showToast("To'ldiring", 'warning'); return; }
+    const payload = { format_name: name, days_allowed: days, description: desc || null };
+    if (editId) payload.id = editId;
+    const { error } = await Tasks.upsertSlaRule(payload);
+    if (error) { this.showToast('Xatolik: ' + error.message, 'error'); return; }
+    this.closeModal();
+    this.showToast('SLA qoida saqlandi', 'success');
+    this.loadSlaRules();
+  },
+
+  async deleteSlaRule(id) {
+    if (!confirm("SLA qoidani o'chirishni tasdiqlaysizmi?")) return;
+    const { error } = await Tasks.deleteSlaRule(id);
+    if (error) { this.showToast('Xatolik: ' + error.message, 'error'); return; }
+    this.showToast("O'chirildi");
+    this.loadSlaRules();
+  },
+
+  // ================================================================
+  //  ADMIN
+  // ================================================================
+  async loadAdminPage() {
+    this.showAdminTab(this._activeAdminTab);
+  },
+
+  showAdminTab(name) {
+    document.querySelectorAll('.admin-subtab').forEach(function(el) { el.style.display = 'none'; });
+    document.querySelectorAll('#page-admin .sub-tab').forEach(function(el) { el.classList.remove('active'); });
+    const sub = document.getElementById('admin-' + name);
+    if (sub) sub.style.display = 'block';
+    const btn = document.querySelector('#page-admin .sub-tab[onclick*="' + name + '"]');
+    if (btn) btn.classList.add('active');
+    this._activeAdminTab = name;
+    if (name === 'users') this.loadUsers();
+    if (name === 'logs')  this.loadUploadLogs();
+  },
+
+  async loadUsers() {
+    const { data } = await window.supabase.from('profiles').select('*').order('created_at');
+    const el = document.getElementById('usersTable');
+    if (!data || !data.length) {
+      el.innerHTML = '<div class="empty-state"><div class="big">👥</div><p>Foydalanuvchi yo\'q</p></div>';
+      return;
+    }
+    const roleLabels = { admin: '👑 Egasi', manager: '👔 Rahbar', designer: '🎨 Dizayner', analyst: '📊 Tahlilchi' };
+    el.innerHTML = '<table><thead><tr><th>Ism</th><th>ID</th><th>Rol</th><th>Bo\'lim</th><th>Qo\'shilgan</th><th></th></tr></thead>' +
+      '<tbody>' + data.map(function(u) {
+        const safeId  = u.id;
+        const safeName = (u.name||'').replace(/'/g,'&#39;');
+        const safeDiv  = (u.division||'').replace(/'/g,'&#39;');
+        return '<tr>' +
+          '<td><strong>' + (u.name||'') + '</strong></td>' +
+          '<td style="font-size:11px;color:var(--gray-500)">' + u.id + '</td>' +
+          '<td><span class="badge badge-pending">' + (roleLabels[u.role]||u.role) + '</span></td>' +
+          '<td style="font-size:12px">' + (u.division||'—') + '</td>' +
+          '<td style="font-size:12px;color:var(--gray-500)">' + formatDate(u.created_at) + '</td>' +
+          '<td><button class="btn-danger-sm" style="background:var(--red-light);color:var(--red-dark)" ' +
+            'onclick="App.showEditUser(\'' + safeId + '\',\'' + safeName + '\',\'' + u.role + '\',\'' + safeDiv + '\')">✏ Tahrirlash</button></td>' +
+          '</tr>';
+      }).join('') + '</tbody></table>';
+  },
+
+  showAddUser() {
+    document.getElementById('modalTitle').textContent = 'Yangi foydalanuvchi';
+    document.getElementById('modalBody').innerHTML =
+      '<p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Foydalanuvchi Supabase Auth orqali ro\'yxatdan o\'tadi.</p>' +
+      '<div class="form-group" style="margin-bottom:12px"><label>Ism *</label><input type="text" id="u_name" placeholder="To\'liq ism"></div>' +
+      '<div class="form-group" style="margin-bottom:12px"><label>Email *</label><input type="email" id="u_email"></div>' +
+      '<div class="form-group" style="margin-bottom:12px"><label>Parol *</label><input type="password" id="u_pass"></div>' +
+      '<div class="form-group" style="margin-bottom:12px"><label>Rol</label>' +
+        '<select id="u_role">' +
+          '<option value="designer">🎨 Dizayner</option>' +
+          '<option value="manager">👔 Rahbar</option>' +
+          '<option value="analyst">📊 Tahlilchi</option>' +
+          '<option value="admin">👑 Admin</option>' +
+        '</select></div>' +
+      '<div class="form-group" style="margin-bottom:16px"><label>Bo\'lim</label><input type="text" id="u_division" placeholder="Ixtiyoriy"></div>' +
+      '<div class="flex-end">' +
+        '<button class="btn btn-outline" onclick="App.closeModal()">Bekor qilish</button>' +
+        '<button class="btn btn-primary" onclick="App.createUser()">✓ Yaratish</button>' +
+      '</div>';
+    document.getElementById('modal').style.display = 'flex';
+  },
+
+  async createUser() {
+    const name  = document.getElementById('u_name').value.trim();
+    const email = document.getElementById('u_email').value.trim();
+    const pass  = document.getElementById('u_pass').value;
+    if (!name || !email || !pass) { this.showToast("Majburiy maydonlarni to'ldiring", 'warning'); return; }
+    this.showToast("Foydalanuvchini Supabase Dashboard > Authentication orqali yarating, keyin profil avtomatik yaratiladi", 'warning');
+    this.closeModal();
+  },
+
+  showEditUser(id, name, role, division) {
+    document.getElementById('modalTitle').textContent = 'Foydalanuvchini tahrirlash';
+    document.getElementById('modalBody').innerHTML =
+      '<div class="form-group" style="margin-bottom:12px"><label>Ism *</label><input type="text" id="eu_name" value="' + name + '"></div>' +
+      '<div class="form-group" style="margin-bottom:12px"><label>Rol</label>' +
+        '<select id="eu_role">' +
+          '<option value="designer" ' + (role==='designer'?'selected':'') + '>🎨 Dizayner</option>' +
+          '<option value="manager"  ' + (role==='manager' ?'selected':'') + '>👔 Rahbar</option>' +
+          '<option value="analyst"  ' + (role==='analyst' ?'selected':'') + '>📊 Tahlilchi</option>' +
+          '<option value="admin"    ' + (role==='admin'   ?'selected':'') + '>👑 Admin</option>' +
+        '</select></div>' +
+      '<div class="form-group" style="margin-bottom:16px"><label>Bo\'lim</label><input type="text" id="eu_division" value="' + division + '"></div>' +
+      '<div class="flex-end">' +
+        '<button class="btn btn-outline" onclick="App.closeModal()">Bekor qilish</button>' +
+        '<button class="btn btn-primary" onclick="App.updateUser(\'' + id + '\')">✓ Saqlash</button>' +
+      '</div>';
+    document.getElementById('modal').style.display = 'flex';
+  },
+
+  async updateUser(id) {
+    const { error } = await window.supabase.from('profiles').update({
+      name:     document.getElementById('eu_name').value.trim(),
+      role:     document.getElementById('eu_role').value,
+      division: document.getElementById('eu_division').value.trim() || null,
+    }).eq('id', id);
+    if (error) { this.showToast('Xatolik: ' + error.message, 'error'); return; }
+    this.closeModal();
+    this.showToast('Foydalanuvchi yangilandi', 'success');
+    this.loadUsers();
+  },
+
+  // ================================================================
+  //  UPLOAD
+  // ================================================================
+  onDragOver(e)  { e.preventDefault(); document.getElementById('dropZone').classList.add('drag-over'); },
+  onDragLeave()  { document.getElementById('dropZone').classList.remove('drag-over'); },
+  async onDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropZone').classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) this.processUploadFile(f);
+  },
+  onFileSelect(e) { const f = e.target.files[0]; if (f) this.processUploadFile(f); },
+
+  async processUploadFile(file) {
+    try {
+      const parsed = await Uploader.uploadFile(file, Auth.getUser().id);
+      this._uploadParsed = Object.assign({}, parsed, { filename: file.name });
+      document.getElementById('uploadPreview').style.display = 'block';
+      const preview = parsed.rows.slice(0, 10);
+      if (!preview.length) {
+        document.getElementById('previewTable').innerHTML = '<p style="color:var(--red)">Faylda ma\'lumot topilmadi</p>';
+        return;
+      }
+      const headers = Object.keys(preview[0]);
+      document.getElementById('previewTable').innerHTML = '<div style="overflow-x:auto"><table>' +
+        '<thead><tr>' + headers.map(function(h) { return '<th>' + h + '</th>'; }).join('') + '</tr></thead>' +
+        '<tbody>' + preview.map(function(r) {
+          return '<tr>' + headers.map(function(h) { return '<td style="font-size:12px">' + (r[h] != null ? r[h] : '') + '</td>'; }).join('') + '</tr>';
+        }).join('') + '</tbody></table></div>';
+      document.getElementById('uploadErrors').textContent = parsed.errors.length
+        ? '⚠️ ' + parsed.errors.length + ' ta xatolik: ' + parsed.errors.slice(0,3).join('; ')
+        : '✓ ' + parsed.rows.length + ' ta qator tayyor';
+    } catch (err) {
+      this.showToast("Fayl o'qishda xatolik: " + err.message, 'error');
+    }
+  },
+
+  async confirmUpload() {
+    if (!this._uploadParsed) return;
+    const parsed = this._uploadParsed;
+    document.getElementById('uploadProgress').style.display = 'block';
+    document.getElementById('confirmUploadBtn').disabled = true;
+    const result = await Uploader.confirmUpload(
+      parsed.rows, parsed.filename, parsed.weekStart, parsed.weekEnd,
+      Auth.getUser().id,
+      function(done, total) {
+        const pct = Math.round((done / total) * 100);
+        document.getElementById('uploadProgressFill').style.width = pct + '%';
+        document.getElementById('uploadProgressText').textContent = done + ' / ' + total + ' qator yuklandi';
+      }
+    );
+    if (result.errors.length) {
+      this.showToast(result.inserted + ' ta yuklandi, ' + result.errors.length + ' ta xatolik', 'warning');
+    } else {
+      this.showToast('✓ ' + result.inserted + ' ta qator muvaffaqiyatli yuklandi!', 'success');
+    }
+    this.cancelUpload();
+  },
+
+  cancelUpload() {
+    this._uploadParsed = null;
+    document.getElementById('uploadPreview').style.display = 'none';
+    document.getElementById('fileInput').value = '';
+    document.getElementById('uploadProgress').style.display = 'none';
+    document.getElementById('uploadProgressFill').style.width = '0%';
+    document.getElementById('confirmUploadBtn').disabled = false;
+  },
+
+  async loadUploadLogs() {
+    const { data } = await Uploader.getUploadLogs();
+    const el = document.getElementById('logsTable');
+    if (!data || !data.length) {
+      el.innerHTML = '<div class="empty-state"><div class="big">📋</div><p>Yuklash tarixi yo\'q</p></div>';
+      return;
+    }
+    el.innerHTML = '<table><thead><tr><th>Sana</th><th>Fayl</th><th>Davr</th><th>Qatorlar</th><th>Kim</th><th>Holat</th></tr></thead>' +
+      '<tbody>' + data.map(function(l) {
+        return '<tr>' +
+          '<td style="font-size:12px">' + formatDate(l.uploaded_at) + '</td>' +
+          '<td style="font-size:12px">' + (l.filename||'—') + '</td>' +
+          '<td style="font-size:12px">' + (l.week_start ? formatDate(l.week_start) + ' – ' + formatDate(l.week_end) : '—') + '</td>' +
+          '<td style="font-weight:600">' + l.rows_imported + '</td>' +
+          '<td style="font-size:12px">' + ((l.uploader && l.uploader.name) || '—') + '</td>' +
+          '<td><span class="badge ' + (l.status==='success'?'badge-ok':'badge-late') + '">' + (l.status==='success'?'✓ Muvaffaqiyatli':'✕ Xatolik') + '</span></td>' +
+          '</tr>';
+      }).join('') + '</tbody></table>';
+  },
+
+  // ================================================================
+  //  HELPERS
+  // ================================================================
+  populateMonthSelects() {
+    const MONTHS_UZ = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+    const now = new Date();
+    let options = '';
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      options += '<option value="' + d.getFullYear() + '-' + d.getMonth() + '">' + MONTHS_UZ[d.getMonth()] + ' ' + d.getFullYear() + '</option>';
+    }
+    const currentVal = now.getFullYear() + '-' + now.getMonth();
+    ['dashMonth','reportMonth'].forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el) { el.innerHTML = options; el.value = currentVal; }
+    });
+  },
+
+  renderPagination(containerId, total, currentPage, pageSize, onPage) {
+    const el = document.getElementById(containerId);
+    if (!el || !total) { if (el) el.style.display = 'none'; return; }
+    const totalPages = Math.ceil(total / pageSize);
+    if (totalPages <= 1) { el.style.display = 'none'; return; }
+    el.style.display = 'flex';
+    this._paginationCallbacks[containerId] = onPage;
+    let pageBtns = '';
+    const maxShow = Math.min(totalPages, 7);
+    for (let i = 1; i <= maxShow; i++) {
+      pageBtns += '<button class="page-btn ' + (i===currentPage?'active':'') + '" onclick="App._onPage(\'' + containerId + '\',' + i + ')">' + i + '</button>';
+    }
+    el.innerHTML = '<span class="pagination-info">' + total + ' ta / ' + currentPage + '-sahifa</span>' +
+      '<div class="pagination-btns">' +
+        '<button class="page-btn" ' + (currentPage===1?'disabled':'') + ' onclick="App._onPage(\'' + containerId + '\',' + (currentPage-1) + ')">‹</button>' +
+        pageBtns +
+        '<button class="page-btn" ' + (currentPage===totalPages?'disabled':'') + ' onclick="App._onPage(\'' + containerId + '\',' + (currentPage+1) + ')">›</button>' +
+      '</div>';
+  },
+
+  _onPage(containerId, page) {
+    const cb = this._paginationCallbacks[containerId];
+    if (cb) cb(page);
+  },
+
+  closeModal(e) {
+    if (e && e.target !== document.getElementById('modal')) return;
+    document.getElementById('modal').style.display = 'none';
+  },
+
+  setLanguage(lang) {
+    setLang(lang);
+    document.getElementById('langUz').classList.toggle('active', lang === 'uz');
+    document.getElementById('langRu').classList.toggle('active', lang === 'ru');
+    const active = document.querySelector('.page.active');
+    const activeName = active && active.id.replace('page-', '');
+    if (activeName) this.showPage(activeName);
+  },
+
+  showToast(msg, type) {
+    type = type || 'info';
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    const icons = { success: '✓', error: '✕', warning: '⚠️', info: 'ℹ' };
+    toast.innerHTML = '<span>' + (icons[type]||'ℹ') + '</span><span>' + msg + '</span>';
+    container.appendChild(toast);
+    setTimeout(function() {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(40px)';
+      toast.style.transition = 'all 0.3s';
+      setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+    }, 3500);
+  },
+
+  async populateFormatFilter() {
+    const { data: rules } = await Tasks.getSlaRules();
+    const el = document.getElementById('filterFormat');
+    if (el) {
+      el.innerHTML = '<option value="">Barchasi</option>' +
+        (rules||[]).map(function(r) { return '<option value="' + r.format_name + '">' + r.format_name + '</option>'; }).join('');
+    }
+  },
+};
+
+// ================================================================
+//  CONFIG ERROR
+// ================================================================
+function showConfigError() {
+  document.getElementById('configError').style.display = 'flex';
+  document.getElementById('loginScreen').style.display = 'none';
 }
+
+// ================================================================
+//  BOOTSTRAP
+// ================================================================
+document.addEventListener('DOMContentLoaded', async function() {
+  if (typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_ANON_KEY !== 'undefined') {
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } else {
+    showConfigError();
+    return;
+  }
+  document.getElementById('loginPassword').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') App.handleLogin();
+  });
+  await App.init();
+});
 </script>
 </body>
 </html>
