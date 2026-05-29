@@ -15,14 +15,6 @@ end;
 $$ language plpgsql;
 
 -- ---------------------------------------------------------------------------
--- Helper: role check (security definer so it bypasses RLS)
--- ---------------------------------------------------------------------------
-create or replace function get_my_role()
-returns text as $$
-  select role from profiles where id = auth.uid();
-$$ language sql security definer;
-
--- ---------------------------------------------------------------------------
 -- Table: profiles
 -- ---------------------------------------------------------------------------
 create table if not exists profiles (
@@ -38,6 +30,36 @@ create table if not exists profiles (
 create trigger trg_profiles_updated_at
   before update on profiles
   for each row execute function set_updated_at();
+
+-- ---------------------------------------------------------------------------
+-- Auto-create profile on new user signup
+-- ---------------------------------------------------------------------------
+create or replace function handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, name, role)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    coalesce(new.raw_user_meta_data->>'role', 'designer')
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create or replace trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function handle_new_user();
+
+-- ---------------------------------------------------------------------------
+-- Helper: role check (security definer so it bypasses RLS)
+-- Must be created AFTER profiles table exists
+-- ---------------------------------------------------------------------------
+create or replace function get_my_role()
+returns text as $$
+  select role from profiles where id = auth.uid();
+$$ language sql security definer;
 
 -- ---------------------------------------------------------------------------
 -- Table: tasks
@@ -380,4 +402,11 @@ on conflict (format_name) do nothing;
 -- Realtime
 -- =============================================================================
 
-alter publication supabase_realtime add table tasks;
+-- Enable realtime for tasks (supabase_realtime publication is created by default in Supabase)
+-- Run this only if the publication exists (Supabase hosted projects have it by default)
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    alter publication supabase_realtime add table tasks;
+  end if;
+end $$;
