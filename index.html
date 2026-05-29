@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Al-Sahiy — Dizayner SLA Tizimi</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --red: #C92C35;
+    --red-dark: #A02028;
+    --red-light: #F5D5D7;
+    --red-mid: #E8A0A4;
+    --white: #FFFFFF;
+    --gray-50: #F9F9F9;
+    --gray-100: #F2F2F2;
+    --gray-200: #E5E5E5;
+    --gray-300: #CCCCCC;
+    --gray-500: #888888;
+    --gray-700: #444444;
+    --gray-900: #1A1A1A;
+    --green: #218F6D;
+    --green-light: #D0EDE6;
+    --amber: #B8860B;
+    --amber-light: #FEF3C7;
+    --danger-light: #FDE8E9;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(201,44,53,0.08);
+    --shadow-card: 0 4px 24px rgba(0,0,0,0.07);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Rubik', sans-serif;
+    background: var(--gray-100);
+    color: var(--gray-900);
+    min-height: 100vh;
+  }
+
+  /* LOGIN */
+  .login-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #A02028 0%, #C92C35 60%, #8B1A20 100%);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .login-card {
+    background: white;
+    border-radius: 16px;
+    padding: 40px 36px;
+    width: 380px;
+    max-width: 94vw;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+  }
+  .login-logo {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .login-logo-text {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: -0.5px;
+  }
+  .login-logo-sub {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-top: 4px;
+    font-weight: 400;
+  }
+  .login-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .login-field { margin-bottom: 14px; }
+  .login-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+  }
+  .login-field input {
+    width: 100%;
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    color: var(--gray-900);
+    background: white;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .login-field input:focus { border-color: var(--red); }
+  .login-btn {
+    width: 100%;
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    font-family: 'Rubik', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+  }
+  .login-btn:hover { background: var(--red-dark); }
+  .login-error {
+    background: var(--danger-light);
+    color: var(--red-dark);
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 14px;
+    display: none;
+    font-weight: 500;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--red);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(201,44,53,0.3);
+  }
+  .header-logo {
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+  .header-logo span { font-weight: 300; opacity: 0.85; }
+  .header-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 400;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .month-badge {
+    background: rgba(255,255,255,0.18);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .user-name {
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .role-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .role-badge.admin { background: rgba(255,255,255,0.95); color: var(--red); }
+  .role-badge.manager { background: #FEF3C7; color: #92400E; }
+  .role-badge.designer { background: #D0EDE6; color: #1A6B52; }
+  .logout-btn {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Rubik', sans-serif;
+    transition: background 0.2s;
+  }
+  .logout-btn:hover { background: rgba(255,255,255,0.25); }
+
+  /* TABS */
+  .tabs {
+    background: white;
+    display: flex;
+    gap: 0;
+    padding: 0 32px;
+    border-bottom: 2px solid var(--gray-200);
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-500);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    font-family: 'Rubik', sans-serif;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    white-space: nowrap;
+  }
+  .tab.active {
+    color: var(--red);
+    border-bottom-color: var(--red);
+    font-weight: 600;
+  }
+  .tab:hover:not(.active) { color: var(--gray-700); }
+
+  /* MAIN */
+  .main { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* STAT CARDS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    border-left: 4px solid var(--gray-200);
+    transition: transform 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-card.red { border-left-color: var(--red); }
+  .stat-card.green { border-left-color: var(--green); }
+  .stat-card.amber { border-left-color: #D97706; }
+  .stat-card.gray { border-left-color: var(--gray-300); }
+  .stat-label {
+    font-size: 12px;
+    color: var(--gray-500);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-card.red .stat-value { color: var(--red); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.amber .stat-value { color: #D97706; }
+  .stat-card.gray .stat-value { color: var(--gray-700); }
+  .stat-sub { font-size: 12px; color: var(--gray-500); }
+
+  /* KPI BAR */
+  .kpi-section {
+    background: white;
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 24px;
+  }
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 18px;
+    background: var(--red);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .kpi-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .kpi-bar-label { font-size: 13px; color: var(--gray-700); width: 140px; flex-shrink: 0; font-weight: 500; }
+  .kpi-bar-track {
+    flex: 1;
+    height: 10px;
+    background: var(--gray-200);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .kpi-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    background: var(--red);
+  }
+  .kpi-bar-fill.green { background: var(--green); }
+  .kpi-bar-fill.amber { background: #D97706; }
+  .kpi-bar-val { font-size: 13px; font-weight: 600; color: var(--gray-900); width: 44px; text-align: right; }
+
+  /* OVERALL KPI SCORE */
+  .kpi-score-box {
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+    color: white;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .kpi-score-title { font-size: 13px; opacity: 0.8; font-weight: 400; margin-bottom: 4px; }
+  .kpi-score-num { font-size: 48px; font-weight: 700; line-height: 1; }
+  .kpi-score-sub { font-size: 12px; opacity: 0.75; margin-top: 4px; }
+  .kpi-score-right { text-align: right; }
+  .kpi-score-grade { font-size: 56px; font-weight: 700; opacity: 0.9; }
+  .kpi-threshold-note { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+
+  /* TASKS TABLE */
+  .table-section {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .table-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .table-header .section-title { margin-bottom: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    background: var(--gray-50);
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: var(--gray-50); }
+  tbody tr:last-child { border-bottom: none; }
+  td { padding: 11px 16px; color: var(--gray-700); vertical-align: top; }
+  td:first-child { font-weight: 500; color: var(--gray-900); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-ok { background: var(--green-light); color: #1A6B52; }
+  .badge-late { background: var(--danger-light); color: var(--red-dark); }
+  .badge-pending { background: var(--amber-light); color: var(--amber); }
+  .badge-format {
+    background: var(--red-light);
+    color: var(--red-dark);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+
+  /* FILTER BAR */
+  .filter-bar {
+    background: white;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-group label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .filter-group input, .filter-group select {
+    font-family: 'Rubik', sans-serif;
+    font-size: 12px;
+    padding: 7px 10px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    color: var(--gray-900);
+    background: white;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .filter-group input:focus, .filter-group select:focus { border-color: var(--red); }
+
+  /* ADD TASK FORM */
+  .add-form {
+    background: white;
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 24px;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  input, select, textarea {
+    font-family: 'Rubik', sans-serif;
+    font-size: 13px;
+    padding: 9px 12px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    color: var(--gray-900);
+    background: white;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--red); }
+  textarea { resize: vertical; min-height: 64px; }
+
+  .btn {
+    font-family: 'Rubik', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--red);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--red-dark); }
+  .btn-outline {
+    background: white;
+    color: var(--red);
+    border: 1.5px solid var(--red);
+  }
+  .btn-outline:hover { background: var(--red-light); }
+  .btn-green {
+    background: var(--green);
+    color: white;
+    border: none;
+  }
+  .btn-green:hover { background: #1A6B52; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-danger-sm {
+    background: var(--danger-light);
+    color: var(--red-dark);
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Rubik', sans-serif;
+  }
+  .btn-gray-sm {
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Rubik', sans-serif;
+  }
+  .btn-blue-sm {
+    background: #EBF5FF;
+    color: #1D4ED8;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Rubik', sans-serif;
+  }
+
+  /* FORMAT BREAKDOWN */
+  .format-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .format-card {
+    background: white;
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    text-align: center;
+    border-top: 3px solid var(--red-light);
+    transition: all 0.2s;
+  }
+  .format-card:hover { border-top-color: var(--red); transform: translateY(-1px); }
+  .format-name { font-size: 12px; font-weight: 600; color: var(--gray-700); margin-bottom: 8px; }
+  .format-stats { display: flex; justify-content: center; gap: 12px; }
+  .format-stat { text-align: center; }
+  .format-stat-val { font-size: 20px; font-weight: 700; }
+  .format-stat-val.red { color: var(--red); }
+  .format-stat-val.green { color: var(--green); }
+  .format-stat-val.amber { color: #D97706; }
+  .format-stat-lbl { font-size: 10px; color: var(--gray-500); margin-top: 2px; }
+
+  /* MONTH SELECTOR */
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .month-nav select {
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-color: var(--gray-200);
+    min-width: 160px;
+  }
+
+  /* SLA RULES PAGE */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .rule-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .rule-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--red-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+  .rule-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .rule-desc { font-size: 13px; color: var(--gray-500); line-height: 1.6; }
+  .rule-deadline {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--gray-500);
+  }
+  .empty-state .big { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* REPORT PAGE */
+  .report-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 20px;
+  }
+  .report-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--red-light);
+  }
+  .report-logo { font-size: 20px; font-weight: 700; color: var(--red); }
+  .report-period { font-size: 13px; color: var(--gray-500); }
+
+  .verdict-box {
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .verdict-box.good { background: var(--green-light); }
+  .verdict-box.bad { background: var(--danger-light); }
+  .verdict-box.warn { background: var(--amber-light); }
+  .verdict-icon { font-size: 24px; }
+  .verdict-text { font-size: 14px; font-weight: 500; }
+  .verdict-text.good { color: #1A6B52; }
+  .verdict-text.bad { color: var(--red-dark); }
+  .verdict-text.warn { color: var(--amber); }
+
+  /* NOTIFICATION */
+  .notif {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--gray-900);
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 9999;
+    display: none;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-box {
+    background: white;
+    border-radius: var(--radius);
+    padding: 28px;
+    width: 480px;
+    max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .modal-title { font-size: 16px; font-weight: 600; color: var(--gray-900); }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--gray-500);
+    padding: 4px;
+    font-family: 'Rubik', sans-serif;
+  }
+  .modal-form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .modal-form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .modal-form-group input,
+  .modal-form-group select,
+  .modal-form-group textarea {
+    width: 100%;
+    font-family: 'Rubik', sans-serif;
+    font-size: 13px;
+    padding: 9px 12px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    color: var(--gray-900);
+    background: white;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal-form-group input:focus,
+  .modal-form-group select:focus,
+  .modal-form-group textarea:focus { border-color: var(--red); }
+
+  /* ADMIN TABLE */
+  .admin-table-section {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .admin-table-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* COMMENT */
+  .comment-item {
+    background: var(--gray-50);
+    border-left: 3px solid var(--red-mid);
+    border-radius: 0 4px 4px 0;
+    padding: 6px 10px;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--gray-700);
+    line-height: 1.5;
+  }
+  .comment-meta {
+    font-size: 10px;
+    color: var(--gray-500);
+    margin-bottom: 2px;
+    font-weight: 500;
+  }
+
+  .flex-end { display: flex; justify-content: flex-end; gap: 10px; }
+  .mt-8 { margin-top: 8px; }
+  .gap-8 { gap: 8px; }
+
+  canvas { max-height: 260px; }
+
+  @media (max-width: 900px) {
+    .filter-bar { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 768px) {
+    .main { padding: 16px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .format-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr; }
+    .rules-grid { grid-template-columns: 1fr; }
+    .header { padding: 0 16px; }
+    .tabs { padding: 0 16px; }
+    .filter-bar { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="login-overlay">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-text">al-sahíy</div>
+      <div class="login-logo-sub">Dizayner SLA Monitoring Tizimi</div>
+    </div>
+    <div class="login-title">Tizimga kirish</div>
+    <div class="login-error" id="loginError">Login yoki parol noto'g'ri</div>
+    <div class="login-field">
+      <label>Foydalanuvchi nomi</label>
+      <input type="text" id="loginUsername" placeholder="username" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Parol</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Kirish</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none">
+
+<div class="header">
+  <div>
+    <div class="header-logo">al-sahíy <span>/ Dizayner SLA</span></div>
+    <div class="header-sub">Grafik dizayner deadline monitoring tizimi</div>
+  </div>
+  <div class="header-right">
+    <div class="month-badge" id="currentMonthBadge">— oy —</div>
+    <div class="user-info">
+      <span class="user-name" id="headerUserName"></span>
+      <span class="role-badge" id="headerRoleBadge"></span>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Chiqish</button>
+  </div>
+</div>
+
+<div class="tabs" id="tabsBar">
+  <!-- rendered by renderTabs() -->
+</div>
+
+<div class="main">
+
+  <!-- DASHBOARD PAGE -->
+  <div class="page" id="page-dashboard">
+    <div class="month-nav">
+      <select id="dashMonth" onchange="renderDashboard()"></select>
+      <span style="font-size:13px;color:var(--gray-500)">oyining ko'rsatkichlari</span>
+    </div>
+    <div class="kpi-score-box" id="kpiScoreBox">
+      <div class="kpi-score-left">
+        <div class="kpi-score-title">Umumiy KPI ball (oylik)</div>
+        <div class="kpi-score-num" id="kpiScoreNum">—</div>
+        <div class="kpi-score-sub" id="kpiScoreSub">Hali topshiriq yo'q</div>
+      </div>
+      <div class="kpi-score-right">
+        <div class="kpi-score-grade" id="kpiGrade">—</div>
+        <div class="kpi-threshold-note">Qizil chegara: 60 ball</div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card red">
+        <div class="stat-label">Jami topshiriq</div>
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-sub">Bu oy</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">O'z vaqtida</div>
+        <div class="stat-value" id="statOntime">0</div>
+        <div class="stat-sub" id="statOntimePct">—</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-label">Kechikkan</div>
+        <div class="stat-value" id="statLate">0</div>
+        <div class="stat-sub" id="statLatePct">—</div>
+      </div>
+      <div class="stat-card gray">
+        <div class="stat-label">Qayta ishlangan</div>
+        <div class="stat-value" id="statRevision">0</div>
+        <div class="stat-sub" id="statRevisionPct">—</div>
+      </div>
+    </div>
+    <div class="kpi-section">
+      <div class="section-title">KPI ko'rsatkichlari tahlili</div>
+      <div id="kpiBars"></div>
+    </div>
+    <div class="format-grid" id="formatCards"></div>
+    <div class="table-section">
+      <div class="table-header">
+        <div class="section-title">So'nggi topshiriqlar</div>
+      </div>
+      <div id="recentTasksTable"></div>
+    </div>
+  </div>
+
+  <!-- TASKS PAGE (admin/manager) -->
+  <div class="page" id="page-tasks">
+    <div class="month-nav">
+      <select id="tasksMonth" onchange="renderTasks()"></select>
+      <span style="font-size:13px;color:var(--gray-500)">oyining topshiriqlari</span>
+      <button class="btn btn-outline btn-sm" id="tasksAddBtn" onclick="showPage('add')">+ Yangi qo'shish</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV('tasks')">CSV yuklab olish</button>
+      <button class="btn btn-outline btn-sm" onclick="exportExcel('tasks')">Excel yuklab olish</button>
+    </div>
+    <div class="filter-bar" id="tasksFilterBar">
+      <div class="filter-group">
+        <label>Qidiruv</label>
+        <input type="text" id="fSearch" placeholder="Topshiriq nomi..." oninput="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>Holat</label>
+        <select id="fStatus" onchange="applyFilters()">
+          <option value="">Barchasi</option>
+          <option value="pending">Jarayonda</option>
+          <option value="done_ontime">O'z vaqtida</option>
+          <option value="done_late">Kechikkan</option>
+          <option value="revision">Revision</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Format</label>
+        <select id="fFormat" onchange="applyFilters()"><option value="">Barchasi</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Bo'lim</label>
+        <select id="fDivision" onchange="applyFilters()"><option value="">Barchasi</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Sanadan</label>
+        <input type="date" id="fDateFrom" onchange="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>Sanagacha</label>
+        <input type="date" id="fDateTo" onchange="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>&nbsp;</label>
+        <button class="btn btn-outline btn-sm" onclick="clearFilters()">Tozalash</button>
+      </div>
+    </div>
+    <div class="table-section">
+      <div class="table-header">
+        <div class="section-title">Barcha topshiriqlar</div>
+        <div id="tasksCount" style="font-size:13px;color:var(--gray-500)"></div>
+      </div>
+      <div id="allTasksTable"></div>
+    </div>
+  </div>
+
+  <!-- DESIGNER MY TASKS PAGE -->
+  <div class="page" id="page-mytasks">
+    <div class="month-nav">
+      <span style="font-size:15px;font-weight:600;color:var(--gray-900)">Mening topshiriqlarim</span>
+    </div>
+    <div class="table-section">
+      <div class="table-header">
+        <div class="section-title">Barcha topshiriqlar</div>
+        <div id="myTasksCount" style="font-size:13px;color:var(--gray-500)"></div>
+      </div>
+      <div id="myTasksTable"></div>
+    </div>
+  </div>
+
+  <!-- ADD TASK PAGE -->
+  <div class="page" id="page-add">
+    <div class="add-form">
+      <div class="section-title" style="margin-bottom:20px">Yangi topshiriq qo'shish</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Topshiriq nomi *</label>
+          <input type="text" id="taskName" placeholder="Masalan: Ramazon aksiya banneri">
+        </div>
+        <div class="form-group">
+          <label>Format *</label>
+          <select id="taskFormat">
+            <option value="">— tanlang —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Do'kon / Bo'lim</label>
+          <select id="taskDivision"></select>
+        </div>
+        <div class="form-group">
+          <label>Berilgan sana *</label>
+          <input type="date" id="taskGiven">
+        </div>
+        <div class="form-group">
+          <label>Deadline (oxirgi muddat) *</label>
+          <input type="date" id="taskDeadline">
+        </div>
+        <div class="form-group">
+          <label>Bajarilgan sana</label>
+          <input type="date" id="taskDone">
+        </div>
+        <div class="form-group">
+          <label>Holat</label>
+          <select id="taskStatus">
+            <option value="pending">Jarayonda</option>
+            <option value="done_ontime">Bajarildi — o'z vaqtida</option>
+            <option value="done_late">Bajarildi — kech</option>
+            <option value="revision">Qayta ishlash kerak</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Kechikish sababi (agar bo'lsa)</label>
+          <input type="text" id="taskReason" placeholder="Masalan: Kontent kech berildi">
+        </div>
+        <div class="form-group">
+          <label>Izoh</label>
+          <input type="text" id="taskNote" placeholder="Qo'shimcha ma'lumot">
+        </div>
+      </div>
+      <div class="flex-end">
+        <button class="btn btn-outline" onclick="resetForm()">Tozalash</button>
+        <button class="btn btn-primary" onclick="addTask()">✓ Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORT PAGE -->
+  <div class="page" id="page-report">
+    <div class="month-nav">
+      <select id="reportMonth" onchange="renderReport()"></select>
+      <span style="font-size:13px;color:var(--gray-500)">oyi uchun hisobot</span>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV('report')">CSV yuklab olish</button>
+      <button class="btn btn-outline btn-sm" onclick="exportExcel('report')">Excel yuklab olish</button>
+    </div>
+    <div id="reportContent"></div>
+  </div>
+
+  <!-- RULES PAGE -->
+  <div class="page" id="page-rules">
+    <div class="kpi-section" style="margin-bottom:24px">
+      <div class="section-title">KPI hisoblash formulasi</div>
+      <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:16px;font-size:13px;color:var(--gray-700);line-height:1.9">
+        <strong>Umumiy KPI ball (100 dan)</strong><br>
+        O'z vaqtida bajarish × <strong>90%</strong> og'irlik<br>
+        Qayta ishlash (revision) kamligiga bonus × <strong>10%</strong> og'irlik<br>
+        <br>
+        <strong>Formula:</strong> KPI = (Ontime%) × 0.90 + (100 − Revision%) × 0.10<br>
+        <br>
+        ⚠️ <strong>Qizil chegara:</strong> 60 balldan past = muammo, eslatma beriladi
+      </div>
+    </div>
+    <div id="rulesAdminBar" style="margin-bottom:16px;display:none">
+      <button class="btn btn-primary btn-sm" onclick="openAddRuleModal()">+ Qo'shish</button>
+    </div>
+    <div id="rulesContent"></div>
+  </div>
+
+  <!-- ADMIN PANEL PAGE -->
+  <div class="page" id="page-admin">
+    <div class="admin-table-section">
+      <div class="admin-table-header">
+        <div class="section-title" style="margin-bottom:0">Foydalanuvchilar boshqaruvi</div>
+        <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">+ Foydalanuvchi qo'shish</button>
+      </div>
+      <div id="usersTable"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /mainApp -->
+
+<!-- MODAL -->
+<div id="modal" class="modal-overlay" style="display:none" onclick="closeModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+// ==================== CONSTANTS ====================
+const DEFAULT_SLA_FORMATS = [
+  { name: "SMM post",       days: 1 },
+  { name: "Stories",        days: 1 },
+  { name: "Banner",         days: 2 },
+  { name: "Video/Reels",    days: 3 },
+  { name: "Prezentatsiya",  days: 2 },
+  { name: "Narxnoma",       days: 1 },
+  { name: "POSM material",  days: 2 },
+  { name: "Hujjat/Shablon", days: 1 },
+  { name: "Boshqa",         days: 2 },
+];
+
+const DIVISIONS = ["Umumiy","Apteka","Kanstovar","Xoztovar","Non markazi","Texnomir","Paynet","Al-Sahiy 1-qavat","Al-Sahiy 2-qavat"];
+const MONTHS_UZ = ["Yanvar","Fevral","Mart","Aprel","May","Iyun","Iyul","Avgust","Sentabr","Oktabr","Noyabr","Dekabr"];
+const KPI_THRESHOLD = 60;
+const ONTIME_WEIGHT = 0.90;
+const REVISION_WEIGHT = 0.10;
+
+const DEFAULT_USERS = [
+  { id: 'u1', username: 'admin',     password: 'admin123',  role: 'admin',    name: 'Administrator' },
+  { id: 'u2', username: 'rahbar',    password: 'rahbar123', role: 'manager',  name: 'Fazliddin (CMO)' },
+  { id: 'u3', username: 'dizayner',  password: 'dizayn123', role: 'designer', name: 'Dizayner' },
+];
+
+// ==================== STORAGE KEYS ====================
+const KEY_TASKS   = 'alsahiy_sla_tasks';
+const KEY_RULES   = 'alsahiy_sla_rules';
+const KEY_USERS   = 'alsahiy_users';
+const KEY_SESSION = 'alsahiy_user';
+
+// ==================== DATA ====================
+let tasks = [];
+let slaRules = [];
+let users = [];
+let currentUser = null;
+
+function loadData() {
+  // Users
+  let storedUsers = localStorage.getItem(KEY_USERS);
+  if (!storedUsers) {
+    users = JSON.parse(JSON.stringify(DEFAULT_USERS));
+    localStorage.setItem(KEY_USERS, JSON.stringify(users));
+  } else {
+    users = JSON.parse(storedUsers);
+  }
+  // SLA Rules
+  let storedRules = localStorage.getItem(KEY_RULES);
+  if (!storedRules) {
+    slaRules = JSON.parse(JSON.stringify(DEFAULT_SLA_FORMATS));
+    localStorage.setItem(KEY_RULES, JSON.stringify(slaRules));
+  } else {
+    slaRules = JSON.parse(storedRules);
+  }
+  // Tasks
+  tasks = JSON.parse(localStorage.getItem(KEY_TASKS) || '[]');
+}
+
+function saveTasks()   { localStorage.setItem(KEY_TASKS, JSON.stringify(tasks)); }
+function saveRules()   { localStorage.setItem(KEY_RULES, JSON.stringify(slaRules)); }
+function saveUsers()   { localStorage.setItem(KEY_USERS, JSON.stringify(users)); }
+
+// ==================== AUTH ====================
+function doLogin() {
+  const uname = document.getElementById('loginUsername').value.trim();
+  const pass   = document.getElementById('loginPassword').value;
+  const user   = users.find(u => u.username === uname && u.password === pass);
+  if (!user) {
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  document.getElementById('loginError').style.display = 'none';
+  currentUser = user;
+  sessionStorage.setItem(KEY_SESSION, JSON.stringify(user));
+  showMainApp();
+}
+
+function doLogout() {
+  currentUser = null;
+  sessionStorage.removeItem(KEY_SESSION);
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+}
+
+function showMainApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  // Header user info
+  document.getElementById('headerUserName').textContent = currentUser.name;
+  const rb = document.getElementById('headerRoleBadge');
+  const roleLabels = { admin: 'Egasi', manager: 'Rahbar', designer: 'Dizayner' };
+  rb.textContent = roleLabels[currentUser.role] || currentUser.role;
+  rb.className = 'role-badge ' + currentUser.role;
+  init();
+}
+
+// ==================== INIT ====================
+function init() {
+  const now = new Date();
+  populateFormDropdowns();
+  populateMonthSelects(now);
+  setCurrentMonthBadge(now);
+  renderTabs();
+  // Show first available page
+  const firstTab = getAvailableTabs()[0];
+  if (firstTab) showPage(firstTab.page, true);
+}
+
+function getAvailableTabs() {
+  const role = currentUser.role;
+  if (role === 'admin') {
+    return [
+      { label: '📊 Dashboard',       page: 'dashboard' },
+      { label: '📋 Topshiriqlar',    page: 'tasks' },
+      { label: '➕ Yangi topshiriq', page: 'add' },
+      { label: '📄 Oylik hisobot',   page: 'report' },
+      { label: '📐 SLA Qoidalar',    page: 'rules' },
+      { label: '⚙️ Admin panel',     page: 'admin' },
+    ];
+  } else if (role === 'manager') {
+    return [
+      { label: '📊 Dashboard',       page: 'dashboard' },
+      { label: '📋 Topshiriqlar',    page: 'tasks' },
+      { label: '➕ Yangi topshiriq', page: 'add' },
+      { label: '📄 Oylik hisobot',   page: 'report' },
+      { label: '📐 SLA Qoidalar',    page: 'rules' },
+    ];
+  } else { // designer
+    return [
+      { label: '📊 Dashboard',              page: 'dashboard' },
+      { label: '📋 Mening topshiriqlarim',  page: 'mytasks' },
+    ];
+  }
+}
+
+function renderTabs() {
+  const tabs = getAvailableTabs();
+  const bar = document.getElementById('tabsBar');
+  bar.innerHTML = tabs.map(t =>
+    `<button class="tab" data-page="${t.page}" onclick="showPage('${t.page}')">${t.label}</button>`
+  ).join('');
+}
+
+function populateFormDropdowns() {
+  // Format select in add form
+  const fmt = document.getElementById('taskFormat');
+  if (fmt) {
+    fmt.innerHTML = '<option value="">— tanlang —</option>' +
+      slaRules.map(f => `<option value="${escHtml(f.name)}">${escHtml(f.name)}</option>`).join('');
+  }
+  // Division select in add form
+  const div = document.getElementById('taskDivision');
+  if (div) {
+    div.innerHTML = DIVISIONS.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+  // Filter dropdowns
+  const ff = document.getElementById('fFormat');
+  if (ff) {
+    ff.innerHTML = '<option value="">Barchasi</option>' +
+      slaRules.map(f => `<option value="${escHtml(f.name)}">${escHtml(f.name)}</option>`).join('');
+  }
+  const fd = document.getElementById('fDivision');
+  if (fd) {
+    fd.innerHTML = '<option value="">Barchasi</option>' +
+      DIVISIONS.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+  // Show/hide tasks "add" button for manager
+  const addBtn = document.getElementById('tasksAddBtn');
+  if (addBtn) addBtn.style.display = currentUser.role === 'designer' ? 'none' : '';
+  // Rules admin bar
+  const rulesBar = document.getElementById('rulesAdminBar');
+  if (rulesBar) rulesBar.style.display = currentUser.role === 'admin' ? 'block' : 'none';
+}
+
+function populateMonthSelects(now) {
+  const ids = ['dashMonth','tasksMonth','reportMonth'];
+  const options = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    options.push(`<option value="${d.getFullYear()}-${d.getMonth()}">${MONTHS_UZ[d.getMonth()]} ${d.getFullYear()}</option>`);
+  }
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.innerHTML = options.join(''); el.value = `${now.getFullYear()}-${now.getMonth()}`; }
+  });
+}
+
+function setCurrentMonthBadge(now) {
+  const el = document.getElementById('currentMonthBadge');
+  if (el) el.textContent = `${MONTHS_UZ[now.getMonth()]} ${now.getFullYear()}`;
+}
+
+function getSelectedMonthTasks(selectId) {
+  const val = document.getElementById(selectId)?.value;
+  if (!val) return tasks;
+  const [y, m] = val.split('-').map(Number);
+  return tasks.filter(t => {
+    const d = new Date(t.givenDate);
+    return d.getFullYear() === y && d.getMonth() === m;
+  });
+}
+
+// ==================== KPI CALC ====================
+function calcKPI(list) {
+  const total = list.length;
+  if (!total) return { total:0, ontime:0, late:0, revision:0, ontimePct:0, latePct:0, revisionPct:0, score:null };
+  const ontime   = list.filter(t => t.status === 'done_ontime').length;
+  const late     = list.filter(t => t.status === 'done_late').length;
+  const revision = list.filter(t => t.status === 'revision').length;
+  const ontimePct   = Math.round((ontime   / total) * 100);
+  const latePct     = Math.round((late     / total) * 100);
+  const revisionPct = Math.round((revision / total) * 100);
+  const score = Math.round(ontimePct * ONTIME_WEIGHT + (100 - revisionPct) * REVISION_WEIGHT);
+  return { total, ontime, late, revision, ontimePct, latePct, revisionPct, score };
+}
+
+function getGrade(score) {
+  if (score === null) return { letter:'—', color:'#888' };
+  if (score >= 95) return { letter:'A+', color:'#218F6D' };
+  if (score >= 85) return { letter:'A',  color:'#218F6D' };
+  if (score >= 75) return { letter:'B',  color:'#D97706' };
+  if (score >= KPI_THRESHOLD) return { letter:'C', color:'#D97706' };
+  return { letter:'D', color:'#C92C35' };
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard() {
+  const list = getSelectedMonthTasks('dashMonth');
+  const k = calcKPI(list);
+  const grade = getGrade(k.score);
+
+  document.getElementById('kpiScoreNum').textContent = k.score !== null ? k.score : '—';
+  document.getElementById('kpiGrade').textContent = grade.letter;
+  document.getElementById('kpiGrade').style.color = grade.letter === '—' ? 'rgba(255,255,255,0.4)' : 'white';
+  const sub = k.score === null ? 'Hali topshiriq kiritilmagan' : (k.score < KPI_THRESHOLD ? '⚠️ Qizil chegara ostida!' : '✓ Normada');
+  document.getElementById('kpiScoreSub').textContent = sub;
+  const box = document.getElementById('kpiScoreBox');
+  box.style.background = k.score !== null && k.score < KPI_THRESHOLD
+    ? 'linear-gradient(135deg,#A02028 0%,#7A1820 100%)'
+    : 'linear-gradient(135deg,#C92C35 0%,#A02028 100%)';
+
+  document.getElementById('statTotal').textContent    = k.total;
+  document.getElementById('statOntime').textContent   = k.ontime;
+  document.getElementById('statOntimePct').textContent = k.total ? `${k.ontimePct}% bajarildi` : '—';
+  document.getElementById('statLate').textContent     = k.late;
+  document.getElementById('statLatePct').textContent  = k.total ? `${k.latePct}% kechikkan` : '—';
+  document.getElementById('statRevision').textContent = k.revision;
+  document.getElementById('statRevisionPct').textContent = k.total ? `${k.revisionPct}% revision` : '—';
+
+  const bars = [
+    { label:"O'z vaqtida bajarish", val: k.ontimePct,   cls: k.ontimePct   >= 80 ? 'green' : (k.ontimePct   >= 60 ? 'amber' : '') },
+    { label:"Kechikish",            val: k.latePct,     cls: '' },
+    { label:"Qayta ishlash",        val: k.revisionPct, cls: 'amber' },
+    { label:"Umumiy KPI",           val: k.score ?? 0,  cls: (k.score??0)  >= 80 ? 'green' : ((k.score??0)  >= 60 ? 'amber' : '') },
+  ];
+  document.getElementById('kpiBars').innerHTML = bars.map(b => `
+    <div class="kpi-bar-wrap">
+      <div class="kpi-bar-label">${b.label}</div>
+      <div class="kpi-bar-track"><div class="kpi-bar-fill ${b.cls}" style="width:${b.val}%"></div></div>
+      <div class="kpi-bar-val">${b.val}%</div>
+    </div>
+  `).join('');
+
+  const formats = slaRules.map(f => {
+    const fTasks = list.filter(t => t.format === f.name);
+    const fTotal  = fTasks.length;
+    const fOntime = fTasks.filter(t => t.status === 'done_ontime').length;
+    const fLate   = fTasks.filter(t => t.status === 'done_late').length;
+    return { name:f.name, days:f.days, total:fTotal, ontime:fOntime, late:fLate };
+  }).filter(f => f.total > 0);
+
+  document.getElementById('formatCards').innerHTML = formats.length
+    ? formats.map(f => `
+      <div class="format-card">
+        <div class="format-name">${escHtml(f.name)}</div>
+        <div style="font-size:10px;color:var(--gray-500);margin-bottom:8px">SLA: ${f.days} kun</div>
+        <div class="format-stats">
+          <div class="format-stat"><div class="format-stat-val red">${f.total}</div><div class="format-stat-lbl">Jami</div></div>
+          <div class="format-stat"><div class="format-stat-val green">${f.ontime}</div><div class="format-stat-lbl">O'z vaqtida</div></div>
+          <div class="format-stat"><div class="format-stat-val ${f.late>0?'amber':'green'}">${f.late}</div><div class="format-stat-lbl">Kech</div></div>
+        </div>
+      </div>`).join('')
+    : '<p style="color:var(--gray-500);font-size:13px;grid-column:1/-1;padding:8px 0">Bu oy topshiriqlar yo\'q</p>';
+
+  const recent = [...list].sort((a,b)=>new Date(b.givenDate)-new Date(a.givenDate)).slice(0,8);
+  renderTaskTable('recentTasksTable', recent, false, false);
+}
+
+// ==================== TASKS ====================
+function renderTasks() {
+  applyFilters();
+}
+
+function applyFilters() {
+  let list = getSelectedMonthTasks('tasksMonth');
+  const search    = (document.getElementById('fSearch')?.value || '').toLowerCase();
+  const status    = document.getElementById('fStatus')?.value || '';
+  const format    = document.getElementById('fFormat')?.value || '';
+  const division  = document.getElementById('fDivision')?.value || '';
+  const dateFrom  = document.getElementById('fDateFrom')?.value || '';
+  const dateTo    = document.getElementById('fDateTo')?.value || '';
+
+  if (search)   list = list.filter(t => t.name.toLowerCase().includes(search));
+  if (status)   list = list.filter(t => t.status === status);
+  if (format)   list = list.filter(t => t.format === format);
+  if (division) list = list.filter(t => t.division === division);
+  if (dateFrom) list = list.filter(t => t.givenDate >= dateFrom);
+  if (dateTo)   list = list.filter(t => t.givenDate <= dateTo);
+
+  document.getElementById('tasksCount').textContent = `${list.length} ta topshiriq`;
+  const canDelete = currentUser.role === 'admin';
+  renderTaskTable('allTasksTable', list, true, canDelete);
+}
+
+function clearFilters() {
+  ['fSearch','fDateFrom','fDateTo'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['fStatus','fFormat','fDivision'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  applyFilters();
+}
+
+function renderMyTasks() {
+  const list = [...tasks].sort((a,b) => new Date(b.givenDate) - new Date(a.givenDate));
+  document.getElementById('myTasksCount').textContent = `${list.length} ta topshiriq`;
+  renderTaskTable('myTasksTable', list, false, false, true);
+}
+
+function renderTaskTable(containerId, list, showActions, canDelete, isDesigner) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="big">📭</div><p>Topshiriq yo'q</p></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Topshiriq</th>
+          <th>Format</th>
+          <th>Bo'lim</th>
+          <th>Berilgan</th>
+          <th>Deadline</th>
+          <th>Bajarilgan</th>
+          <th>Holat</th>
+          ${showActions||isDesigner ? '<th></th>' : ''}
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map(t => {
+          const comments = (t.comments||[]).map(c => `
+            <div class="comment-item">
+              <div class="comment-meta">${escHtml(c.user)} · ${c.time}</div>
+              ${escHtml(c.text)}
+            </div>`).join('');
+          let actionBtns = '';
+          if (isDesigner) {
+            actionBtns = `<td>
+              <button class="btn-blue-sm" onclick="openStatusModal('${t.id}')">Holat o'zgartirish</button>
+            </td>`;
+          } else if (showActions) {
+            actionBtns = `<td style="white-space:nowrap">
+              ${canDelete ? `<button class="btn-danger-sm" onclick="deleteTask('${t.id}')">O'chirish</button>` : ''}
+            </td>`;
+          }
+          return `
+            <tr>
+              <td>
+                ${escHtml(t.name)}
+                ${t.note ? `<div style="font-size:11px;color:var(--gray-500);margin-top:2px">${escHtml(t.note)}</div>` : ''}
+                ${comments}
+              </td>
+              <td><span class="badge-format">${escHtml(t.format)}</span></td>
+              <td style="font-size:12px;color:var(--gray-500)">${escHtml(t.division)}</td>
+              <td style="font-size:12px">${formatDate(t.givenDate)}</td>
+              <td style="font-size:12px">${formatDate(t.deadline)}</td>
+              <td style="font-size:12px">${t.doneDate ? formatDate(t.doneDate) : '<span style="color:var(--gray-300)">—</span>'}</td>
+              <td>${statusBadge(t.status)}${t.reason ? `<div style="font-size:10px;color:var(--gray-500);margin-top:2px">${escHtml(t.reason)}</div>` : ''}</td>
+              ${showActions||isDesigner ? actionBtns : ''}
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function statusBadge(status) {
+  const map = {
+    pending:     '<span class="badge badge-pending">Jarayonda</span>',
+    done_ontime: '<span class="badge badge-ok">✓ O\'z vaqtida</span>',
+    done_late:   '<span class="badge badge-late">⚠ Kechikkan</span>',
+    revision:    '<span class="badge badge-pending">↩ Revision</span>',
+  };
+  return map[status] || status;
+}
+
+function formatDate(str) {
+  if (!str) return '—';
+  const d = new Date(str + 'T00:00:00');
+  return `${d.getDate()}-${MONTHS_UZ[d.getMonth()].slice(0,3)} ${d.getFullYear()}`;
+}
+
+// ==================== ADD TASK ====================
+function addTask() {
+  const name     = document.getElementById('taskName').value.trim();
+  const format   = document.getElementById('taskFormat').value;
+  const given    = document.getElementById('taskGiven').value;
+  const deadline = document.getElementById('taskDeadline').value;
+  if (!name || !format || !given || !deadline) { showNotif('⚠️ Majburiy maydonlarni to\'ldiring'); return; }
+
+  const task = {
+    id:        Date.now().toString(),
+    name,
+    format,
+    division:  document.getElementById('taskDivision').value,
+    givenDate: given,
+    deadline,
+    doneDate:  document.getElementById('taskDone').value || null,
+    status:    document.getElementById('taskStatus').value,
+    reason:    document.getElementById('taskReason').value.trim(),
+    note:      document.getElementById('taskNote').value.trim(),
+    createdAt: new Date().toISOString(),
+    comments:  [],
+  };
+  tasks.push(task);
+  saveTasks();
+  resetForm();
+  showNotif('✓ Topshiriq saqlandi!');
+  showPage('tasks');
+}
+
+function resetForm() {
+  ['taskName','taskGiven','taskDeadline','taskDone','taskReason','taskNote'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const tf = document.getElementById('taskFormat');
+  if (tf) tf.value = '';
+  const td = document.getElementById('taskDivision');
+  if (td) td.value = 'Umumiy';
+  const ts = document.getElementById('taskStatus');
+  if (ts) ts.value = 'pending';
+  document.getElementById('taskGiven').value = new Date().toISOString().split('T')[0];
+}
+
+function deleteTask(id) {
+  if (!confirm("Ushbu topshiriqni o'chirishni tasdiqlaysizmi?")) return;
+  tasks = tasks.filter(t => t.id !== id);
+  saveTasks();
+  renderTasks();
+  showNotif("Topshiriq o'chirildi");
+}
+
+// ==================== DESIGNER STATUS MODAL ====================
+function openStatusModal(taskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  document.getElementById('modalTitle').textContent = "Holat o'zgartirish";
+  document.getElementById('modalBody').innerHTML = `
+    <div style="margin-bottom:12px;font-size:13px;color:var(--gray-500)">
+      Joriy holat: ${statusBadge(task.status)}
+    </div>
+    <div class="modal-form-group">
+      <label>Yangi holat</label>
+      <select id="mNewStatus">
+        <option value="pending" ${task.status==='pending'?'selected':''}>Jarayonda</option>
+        <option value="done_ontime" ${task.status==='done_ontime'?'selected':''}>Bajarildi — o'z vaqtida</option>
+        <option value="done_late" ${task.status==='done_late'?'selected':''}>Bajarildi — kech</option>
+        <option value="revision" ${task.status==='revision'?'selected':''}>Qayta ishlash kerak</option>
+      </select>
+    </div>
+    <div class="modal-form-group">
+      <label>Izoh (ixtiyoriy)</label>
+      <textarea id="mComment" placeholder="Qo'shimcha izoh..." rows="3"></textarea>
+    </div>
+    <div class="flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Bekor qilish</button>
+      <button class="btn btn-primary" onclick="saveStatusChange('${taskId}')">Saqlash</button>
+    </div>
+  `;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function saveStatusChange(taskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  const newStatus = document.getElementById('mNewStatus').value;
+  const comment   = document.getElementById('mComment').value.trim();
+  task.status = newStatus;
+  if (comment) {
+    if (!task.comments) task.comments = [];
+    task.comments.push({
+      user: currentUser.name,
+      time: new Date().toLocaleString('uz'),
+      text: comment,
+    });
+  }
+  saveTasks();
+  closeModal();
+  renderMyTasks();
+  showNotif('✓ Holat yangilandi');
+}
+
+// ==================== REPORT ====================
+function renderReport() {
+  const list = getSelectedMonthTasks('reportMonth');
+  const k = calcKPI(list);
+  const grade = getGrade(k.score);
+  const val = document.getElementById('reportMonth')?.value;
+  const [y, m] = val ? val.split('-').map(Number) : [new Date().getFullYear(), new Date().getMonth()];
+  const monthName = `${MONTHS_UZ[m]} ${y}`;
+
+  let verdictHtml = '';
+  if (k.score === null) {
+    verdictHtml = `<div class="verdict-box warn"><div class="verdict-icon">📭</div><div class="verdict-text warn">Bu oy topshiriq kiritilmagan</div></div>`;
+  } else if (k.score >= 80) {
+    verdictHtml = `<div class="verdict-box good"><div class="verdict-icon">🏆</div><div class="verdict-text good">Ajoyib natija! Dizayner SLA talablarini yuqori darajada bajarmoqda.</div></div>`;
+  } else if (k.score >= KPI_THRESHOLD) {
+    verdictHtml = `<div class="verdict-box warn"><div class="verdict-icon">⚠️</div><div class="verdict-text warn">Qoniqarli natija. Bir qancha kechikishlar kuzatildi — e'tibor talab etadi.</div></div>`;
+  } else {
+    verdictHtml = `<div class="verdict-box bad"><div class="verdict-icon">🔴</div><div class="verdict-text bad">KPI qizil chegara ostida! (${k.score} < ${KPI_THRESHOLD}). Tezkor yaxshilanish talab etiladi.</div></div>`;
+  }
+
+  const fBreakdown = slaRules.map(f => {
+    const fList = list.filter(t => t.format === f.name);
+    if (!fList.length) return null;
+    const fOntime = fList.filter(t => t.status === 'done_ontime').length;
+    const fLate   = fList.filter(t => t.status === 'done_late').length;
+    const fRev    = fList.filter(t => t.status === 'revision').length;
+    const pct = Math.round((fOntime / fList.length) * 100);
+    return { name:f.name, total:fList.length, ontime:fOntime, late:fLate, rev:fRev, pct };
+  }).filter(Boolean);
+
+  document.getElementById('reportContent').innerHTML = `
+    <div class="report-card">
+      <div class="report-header">
+        <div>
+          <div class="report-logo">al-sahíy</div>
+          <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Grafik dizayner oylik SLA hisoboti</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:22px;font-weight:700;color:var(--red)">${monthName}</div>
+          <div class="report-period">Hisobot sanasi: ${new Date().toLocaleDateString('uz')}</div>
+        </div>
+      </div>
+      ${verdictHtml}
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+        <div style="text-align:center;padding:16px;background:var(--gray-50);border-radius:var(--radius-sm)">
+          <div style="font-size:32px;font-weight:700;color:var(--red)">${k.total}</div>
+          <div style="font-size:12px;color:var(--gray-500);margin-top:4px">Jami topshiriq</div>
+        </div>
+        <div style="text-align:center;padding:16px;background:var(--green-light);border-radius:var(--radius-sm)">
+          <div style="font-size:32px;font-weight:700;color:#218F6D">${k.ontimePct}%</div>
+          <div style="font-size:12px;color:#218F6D;margin-top:4px">O'z vaqtida bajarish</div>
+        </div>
+        <div style="text-align:center;padding:16px;background:${k.score!==null&&k.score<KPI_THRESHOLD?'var(--danger-light)':'var(--gray-50)'};border-radius:var(--radius-sm)">
+          <div style="font-size:32px;font-weight:700;color:${grade.color}">${k.score??'—'}</div>
+          <div style="font-size:12px;color:var(--gray-500);margin-top:4px">KPI ball / 100</div>
+        </div>
+      </div>
+      ${fBreakdown.length ? `
+        <div class="section-title">Format bo'yicha tahlil</div>
+        <table style="margin-top:12px">
+          <thead><tr><th>Format</th><th>Jami</th><th>O'z vaqtida</th><th>Kechikkan</th><th>Revision</th><th>Bajarish %</th></tr></thead>
+          <tbody>
+            ${fBreakdown.map(f => `
+              <tr>
+                <td><span class="badge-format">${escHtml(f.name)}</span></td>
+                <td>${f.total}</td>
+                <td style="color:#218F6D;font-weight:600">${f.ontime}</td>
+                <td style="color:${f.late>0?'var(--red)':'var(--gray-500)'};font-weight:${f.late>0?'600':'400'}">${f.late}</td>
+                <td style="color:${f.rev>0?'#D97706':'var(--gray-500)'}">${f.rev}</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="width:60px;height:6px;background:var(--gray-200);border-radius:99px;overflow:hidden">
+                      <div style="width:${f.pct}%;height:100%;background:${f.pct>=80?'#218F6D':f.pct>=60?'#D97706':'#C92C35'};border-radius:99px"></div>
+                    </div>
+                    <span style="font-size:12px;font-weight:600">${f.pct}%</span>
+                  </div>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>` : ''}
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-500);display:flex;justify-content:space-between">
+        <span>Al-Sahiy Supermarket — Marketing bo'limi</span>
+        <span>Mas'ul: Fazliddin (CMO)</span>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== RULES ====================
+function renderRules() {
+  const isAdmin = currentUser.role === 'admin';
+  const el = document.getElementById('rulesContent');
+  if (!el) return;
+
+  if (isAdmin) {
+    // Admin: editable table
+    el.innerHTML = `
+      <div class="table-section">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Format nomi</th>
+              <th>SLA (kun)</th>
+              <th>Amallar</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${slaRules.map((f, i) => `
+              <tr>
+                <td style="color:var(--gray-500)">${i+1}</td>
+                <td>${escHtml(f.name)}</td>
+                <td><span class="rule-deadline">⏱ ${f.days} kun</span></td>
+                <td style="white-space:nowrap">
+                  <button class="btn-blue-sm" style="margin-right:6px" onclick="openEditRuleModal(${i})">Tahrirlash</button>
+                  <button class="btn-danger-sm" onclick="deleteRule(${i})">O'chirish</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else {
+    // Non-admin: read-only cards
+    el.innerHTML = `<div class="rules-grid">
+      ${slaRules.map(f => `
+        <div class="rule-card">
+          <div class="rule-icon">📋</div>
+          <div>
+            <div class="rule-title">${escHtml(f.name)}</div>
+            <div class="rule-desc">Ushbu format uchun standart bajarilish muddati. Deadline — topshiriq berilgan kundan boshlab hisoblanadi.</div>
+            <div class="rule-deadline">⏱ ${f.days} ish kun${f.days > 1 ? 'i' : ''}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }
+}
+
+function openAddRuleModal() {
+  document.getElementById('modalTitle').textContent = "Yangi SLA qoida qo'shish";
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-form-group">
+      <label>Format nomi *</label>
+      <input type="text" id="rName" placeholder="Masalan: Infografika">
+    </div>
+    <div class="modal-form-group">
+      <label>SLA muddati (kun) *</label>
+      <input type="number" id="rDays" min="1" value="1">
+    </div>
+    <div class="flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Bekor qilish</button>
+      <button class="btn btn-primary" onclick="saveNewRule()">Saqlash</button>
+    </div>
+  `;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function saveNewRule() {
+  const name = document.getElementById('rName').value.trim();
+  const days = parseInt(document.getElementById('rDays').value);
+  if (!name || !days || days < 1) { showNotif('⚠️ Maydonlarni to\'ldiring'); return; }
+  slaRules.push({ name, days });
+  saveRules();
+  populateFormDropdowns();
+  renderRules();
+  closeModal();
+  showNotif('✓ Qoida qo\'shildi');
+}
+
+function openEditRuleModal(idx) {
+  const rule = slaRules[idx];
+  document.getElementById('modalTitle').textContent = "SLA qoidani tahrirlash";
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-form-group">
+      <label>Format nomi *</label>
+      <input type="text" id="rName" value="${escHtml(rule.name)}">
+    </div>
+    <div class="modal-form-group">
+      <label>SLA muddati (kun) *</label>
+      <input type="number" id="rDays" min="1" value="${rule.days}">
+    </div>
+    <div class="flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Bekor qilish</button>
+      <button class="btn btn-primary" onclick="saveEditRule(${idx})">Saqlash</button>
+    </div>
+  `;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function saveEditRule(idx) {
+  const name = document.getElementById('rName').value.trim();
+  const days = parseInt(document.getElementById('rDays').value);
+  if (!name || !days || days < 1) { showNotif('⚠️ Maydonlarni to\'ldiring'); return; }
+  slaRules[idx] = { name, days };
+  saveRules();
+  populateFormDropdowns();
+  renderRules();
+  closeModal();
+  showNotif('✓ Qoida yangilandi');
+}
+
+function deleteRule(idx) {
+  if (!confirm("Bu qoidani o'chirishni tasdiqlaysizmi?")) return;
+  slaRules.splice(idx, 1);
+  saveRules();
+  populateFormDropdowns();
+  renderRules();
+  showNotif("Qoida o'chirildi");
+}
+
+// ==================== ADMIN PANEL ====================
+function renderAdminPanel() {
+  const el = document.getElementById('usersTable');
+  if (!el) return;
+  el.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Ism</th>
+          <th>Username</th>
+          <th>Rol</th>
+          <th>Amallar</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${users.map(u => {
+          const roleLabel = { admin:'Egasi', manager:'Rahbar', designer:'Dizayner' }[u.role] || u.role;
+          const isSelf = u.id === currentUser.id;
+          return `
+            <tr>
+              <td>${escHtml(u.name)}</td>
+              <td style="color:var(--gray-500);font-size:12px">${escHtml(u.username)}</td>
+              <td><span class="role-badge ${u.role}">${roleLabel}</span></td>
+              <td style="white-space:nowrap">
+                <button class="btn-blue-sm" style="margin-right:6px" onclick="openEditUserModal('${u.id}')">Tahrirlash</button>
+                ${!isSelf ? `<button class="btn-danger-sm" onclick="deleteUser('${u.id}')">O'chirish</button>` : ''}
+              </td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function openAddUserModal() {
+  document.getElementById('modalTitle').textContent = "Yangi foydalanuvchi";
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-form-group">
+      <label>Ism *</label>
+      <input type="text" id="uName" placeholder="To'liq ism">
+    </div>
+    <div class="modal-form-group">
+      <label>Username *</label>
+      <input type="text" id="uUsername" placeholder="username">
+    </div>
+    <div class="modal-form-group">
+      <label>Parol *</label>
+      <input type="password" id="uPassword" placeholder="parol">
+    </div>
+    <div class="modal-form-group">
+      <label>Rol *</label>
+      <select id="uRole">
+        <option value="admin">Egasi (Admin)</option>
+        <option value="manager">Rahbar (Manager)</option>
+        <option value="designer" selected>Dizayner</option>
+      </select>
+    </div>
+    <div class="flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Bekor qilish</button>
+      <button class="btn btn-primary" onclick="saveNewUser()">Saqlash</button>
+    </div>
+  `;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function saveNewUser() {
+  const name     = document.getElementById('uName').value.trim();
+  const username = document.getElementById('uUsername').value.trim();
+  const password = document.getElementById('uPassword').value;
+  const role     = document.getElementById('uRole').value;
+  if (!name || !username || !password) { showNotif("⚠️ Barcha maydonlarni to'ldiring"); return; }
+  if (users.find(u => u.username === username)) { showNotif('⚠️ Bu username allaqachon mavjud'); return; }
+  users.push({ id: Date.now().toString(), name, username, password, role });
+  saveUsers();
+  renderAdminPanel();
+  closeModal();
+  showNotif("✓ Foydalanuvchi qo'shildi");
+}
+
+function openEditUserModal(uid) {
+  const user = users.find(u => u.id === uid);
+  if (!user) return;
+  const isSelf = uid === currentUser.id;
+  document.getElementById('modalTitle').textContent = "Foydalanuvchini tahrirlash";
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-form-group">
+      <label>Ism *</label>
+      <input type="text" id="uName" value="${escHtml(user.name)}">
+    </div>
+    <div class="modal-form-group">
+      <label>Yangi parol (o'zgartirmasangiz bo'sh qoldiring)</label>
+      <input type="password" id="uPassword" placeholder="yangi parol">
+    </div>
+    ${!isSelf ? `
+    <div class="modal-form-group">
+      <label>Rol</label>
+      <select id="uRole">
+        <option value="admin" ${user.role==='admin'?'selected':''}>Egasi (Admin)</option>
+        <option value="manager" ${user.role==='manager'?'selected':''}>Rahbar (Manager)</option>
+        <option value="designer" ${user.role==='designer'?'selected':''}>Dizayner</option>
+      </select>
+    </div>` : `<p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">O'z rolini o'zgartirish mumkin emas.</p>`}
+    <div class="flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Bekor qilish</button>
+      <button class="btn btn-primary" onclick="saveEditUser('${uid}')">Saqlash</button>
+    </div>
+  `;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function saveEditUser(uid) {
+  const user = users.find(u => u.id === uid);
+  if (!user) return;
+  const isSelf = uid === currentUser.id;
+  user.name = document.getElementById('uName').value.trim() || user.name;
+  const newPass = document.getElementById('uPassword').value;
+  if (newPass) user.password = newPass;
+  if (!isSelf) {
+    const roleEl = document.getElementById('uRole');
+    if (roleEl) user.role = roleEl.value;
+  }
+  saveUsers();
+  // Update session if editing self
+  if (isSelf) {
+    currentUser = user;
+    sessionStorage.setItem(KEY_SESSION, JSON.stringify(user));
+    document.getElementById('headerUserName').textContent = user.name;
+  }
+  renderAdminPanel();
+  closeModal();
+  showNotif('✓ Foydalanuvchi yangilandi');
+}
+
+function deleteUser(uid) {
+  if (uid === currentUser.id) { showNotif("O'zingizni o'chira olmaysiz"); return; }
+  if (!confirm("Bu foydalanuvchini o'chirishni tasdiqlaysizmi?")) return;
+  users = users.filter(u => u.id !== uid);
+  saveUsers();
+  renderAdminPanel();
+  showNotif("Foydalanuvchi o'chirildi");
+}
+
+// ==================== EXPORT ====================
+function getExportData(pageContext) {
+  let list;
+  if (pageContext === 'report') {
+    list = getSelectedMonthTasks('reportMonth');
+  } else {
+    list = getSelectedMonthTasks('tasksMonth');
+    // Apply current filters
+    const search   = (document.getElementById('fSearch')?.value || '').toLowerCase();
+    const status   = document.getElementById('fStatus')?.value || '';
+    const format   = document.getElementById('fFormat')?.value || '';
+    const division = document.getElementById('fDivision')?.value || '';
+    const dateFrom = document.getElementById('fDateFrom')?.value || '';
+    const dateTo   = document.getElementById('fDateTo')?.value || '';
+    if (search)   list = list.filter(t => t.name.toLowerCase().includes(search));
+    if (status)   list = list.filter(t => t.status === status);
+    if (format)   list = list.filter(t => t.format === format);
+    if (division) list = list.filter(t => t.division === division);
+    if (dateFrom) list = list.filter(t => t.givenDate >= dateFrom);
+    if (dateTo)   list = list.filter(t => t.givenDate <= dateTo);
+  }
+  return list;
+}
+
+function statusLabel(s) {
+  const m = { pending:"Jarayonda", done_ontime:"O'z vaqtida", done_late:"Kechikkan", revision:"Revision" };
+  return m[s] || s;
+}
+
+function exportCSV(pageContext) {
+  const list = getExportData(pageContext);
+  const headers = ['Topshiriq nomi','Format',"Bo'lim",'Berilgan sana','Deadline','Bajarilgan sana','Holat','Kechikish sababi','Izoh'];
+  const rows = list.map(t => [
+    t.name, t.format, t.division, t.givenDate, t.deadline,
+    t.doneDate||'', statusLabel(t.status), t.reason||'', t.note||''
+  ]);
+  const csvContent = [headers, ...rows]
+    .map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(','))
+    .join('\r\n');
+  // BOM for Excel
+  const bom = '﻿';
+  const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `alsahiy_topshiriqlar_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showNotif('✓ CSV yuklab olindi');
+}
+
+function exportExcel(pageContext) {
+  if (typeof XLSX === 'undefined') { showNotif('SheetJS yuklanmadi'); return; }
+  const list = getExportData(pageContext);
+  const headers = ['Topshiriq nomi','Format',"Bo'lim",'Berilgan sana','Deadline','Bajarilgan sana','Holat','Kechikish sababi','Izoh'];
+  const rows = list.map(t => [
+    t.name, t.format, t.division, t.givenDate, t.deadline,
+    t.doneDate||'', statusLabel(t.status), t.reason||'', t.note||''
+  ]);
+  const wsData = [headers, ...rows];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Topshiriqlar');
+  XLSX.writeFile(wb, `alsahiy_topshiriqlar_${new Date().toISOString().split('T')[0]}.xlsx`);
+  showNotif('✓ Excel yuklab olindi');
+}
+
+// ==================== NAVIGATION ====================
+function showPage(name, skipRender) {
+  const available = getAvailableTabs().map(t => t.page);
+  if (!available.includes(name)) return;
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+  const pageEl = document.getElementById(`page-${name}`);
+  if (pageEl) pageEl.classList.add('active');
+
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.dataset.page === name) t.classList.add('active');
+  });
+
+  if (!skipRender) {
+    if (name === 'tasks')     renderTasks();
+    if (name === 'mytasks')   renderMyTasks();
+    if (name === 'dashboard') renderDashboard();
+    if (name === 'report')    renderReport();
+    if (name === 'rules')     renderRules();
+    if (name === 'admin')     renderAdminPanel();
+  } else {
+    // Still need to render current page on first load
+    if (name === 'tasks')     renderTasks();
+    if (name === 'mytasks')   renderMyTasks();
+    if (name === 'dashboard') renderDashboard();
+    if (name === 'report')    renderReport();
+    if (name === 'rules')     renderRules();
+    if (name === 'admin')     renderAdminPanel();
+  }
+}
+
+// ==================== MODAL ====================
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal')) return;
+  document.getElementById('modal').style.display = 'none';
+}
+
+// ==================== UTILS ====================
+function showNotif(msg) {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+// ==================== BOOTSTRAP ====================
+loadData();
+
+// Check session
+const sessionUser = sessionStorage.getItem(KEY_SESSION);
+if (sessionUser) {
+  try {
+    const su = JSON.parse(sessionUser);
+    // Re-validate user still exists
+    const found = users.find(u => u.id === su.id && u.username === su.username);
+    if (found) {
+      currentUser = found;
+      showMainApp();
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
